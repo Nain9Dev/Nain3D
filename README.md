@@ -7,6 +7,7 @@
 # Nain3D Gateway · 3D AI Conformance Engine
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-3d.naindev.com-0284c7?style=flat-square&logo=google-chrome&logoColor=white)](https://3d.naindev.com/)
+[![CI](https://github.com/Nain9Dev/Nain3D/actions/workflows/ci.yml/badge.svg)](https://github.com/Nain9Dev/Nain3D/actions/workflows/ci.yml)
 [![Ecosystem Status](https://img.shields.io/badge/status-100%25%20operational-success)](https://status.naindev.com)
 [![Engineering Handbook](https://img.shields.io/badge/paved%20road-3D%20Validation-blue)](https://github.com/Nain9Dev/engineering-handbook)
 [![Cost](https://img.shields.io/badge/cost-0.00_%E2%82%AC-22c55e)](https://github.com/Nain9Dev/engineering-handbook/blob/main/governance/zero-cost-philosophy.md)
