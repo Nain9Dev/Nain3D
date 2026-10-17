@@ -5,6 +5,10 @@ on:
     branches: [master, main]
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: 3D Conformance & Architecture Tests (Python 3.12 / pytest)
