@@ -3,7 +3,7 @@
 ## 1. System Topology
 
 ```text
-Browser Client (Vue 3 + TypeScript + <model-viewer> on Port 5376)
+Browser Client (Vue 3 + TypeScript + three.js stage on Port 5376; ADR-002)
   │
   ├── Reverse Proxy (Vite Dev Server) -> http://localhost:8104
   │
@@ -31,3 +31,32 @@ FastAPI Host (Uvicorn on Port 8104)
   \mathbf{CONFORMANT} & \text{if all checks pass}
   \end{cases}$$
 - **Zero Hallucination:** Even if a generative AI model claims 99% confidence that an asset is a "Chair", if the asset exceeds the 3.0 m scale bound or 50,000 polygon limit, it is rejected deterministically.
+
+## 3. Client Presentation Layer (spec 002)
+
+The client only presents. Every figure on screen (triangles, extents, limits, verdict, SHA-256, latency)
+comes from `EvaluationResult` / `ProfileDefinition`; pass/fail flags are the API's own check results.
+The client never re-decides conformance.
+
+```mermaid
+flowchart LR
+    API[services/api.ts<br/>+ mockEvaluator.ts] --> APP[App.vue<br/>state, URL mode, clock]
+    APP --> VM[viewModel.ts<br/>check rows, formatting]
+    APP --> TL[timeline.ts<br/>reveal + record schedules]
+    APP --> OV[scene/overlay.ts<br/>scale overlay from payload]
+    VM --> UI[Contract / AI panels]
+    TL --> UI
+    OV --> ST[scene/stage.ts<br/>three.js, loaded on demand]
+    I18N[i18n es.ts source, en.ts typed] --> UI
+    I18N --> ST
+```
+
+- **Modes:** `?mode=record` (fixed artboard 1920x1080 or 1080x1920, no chrome, deterministic clock),
+  `?lang=es|en`, `?sample=<id>`, `?clock=manual`, `?format=vertical|horizontal`.
+- **Languages:** Spanish (Spain) is the authoritative catalogue; English is typed against it. The choice is
+  kept in `localStorage` (`nain3d.lang`), never in cookies.
+- **Samples:** `Nain3D.Client/tools/generate-samples.mjs` writes the four GLBs under `public/samples/`; the API
+  serves the same files when present. Static hosting (3d.naindev.com) has no API: verdicts come from the
+  in-browser evaluator, a heuristic implementation of the same four checks. It reads POSITION accessor
+  bounds without node transforms, never reports degenerate faces, and proposes the category from the file
+  name and proportions. Only the Python engine can fail the mesh-defect checks.

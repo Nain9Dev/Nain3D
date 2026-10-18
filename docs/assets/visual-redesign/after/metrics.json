@@ -1,0 +1,25 @@
+{
+  "baseUrl": "http://localhost:5376/",
+  "lcpMsRuns": [
+    248,
+    140,
+    112
+  ],
+  "lcpMsMedian": 140,
+  "firstModelFrameMsRuns": [
+    6541,
+    423,
+    388
+  ],
+  "transferredBytesPerColdLoad": [
+    451905,
+    511095,
+    451903
+  ],
+  "transferredBytesMedian": 451905,
+  "hosts": [
+    "",
+    "localhost:5376",
+    "www.naindev.com"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "baseUrl": "http://localhost:5377/",
+  "lcpMsRuns": [
+    1128,
+    1120,
+    944
+  ],
+  "lcpMsMedian": 1120,
+  "firstModelFrameMsRuns": [
+    null,
+    null,
+    null
+  ],
+  "transferredBytesPerColdLoad": [
+    424065,
+    424051,
+    424049
+  ],
+  "transferredBytesMedian": 424051,
+  "hosts": [
+    "",
+    "ajax.googleapis.com",
+    "brand.naindev.com",
+    "fonts.googleapis.com",
+    "fonts.gstatic.com",
+    "localhost:5377",
+    "www.naindev.com"
+  ]
+}

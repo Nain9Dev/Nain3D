@@ -1,0 +1,59 @@
+/**
+ * NainDev Design System Tokens — v1.5
+ * Canonical Design System Variables (WCAG 2.1 AAA/AA compliant)
+ * Source: https://brand.naindev.com
+ */
+
+:root {
+  /* Core Inks & Surfaces */
+  --nain-blue: #0047AB;
+  --nain-blue-deep: #002B66;
+  --nain-blue-mid: #3C5F94;
+  --nain-blue-soft: #4E6B92;
+  --nain-paper: #EDF1F6;
+  --nain-surface: #F7F9FC;
+  --nain-surface-sunken: #DEE6F0;
+  --nain-line: #C6D2E3;
+  --nain-brand-black: #1D1D1B;
+
+  /* Accents (Exact Complementaries 180° rotation) */
+  --nain-green: #80FF00;
+  --nain-green-ink: #2E6B00;
+  --nain-red: #FF001F;
+  --nain-red-ink: #C4001A;
+
+  /* Typography */
+  --nain-font-sans: "Urbanist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --nain-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --nain-track-brand: 0.32em;
+  --nain-track-label: 0.14em;
+  --nain-track-h1: 0.02em;
+
+  /* Spacing Scale (Deterministic Base 4px) */
+  --nain-s1: 4px;
+  --nain-s2: 8px;
+  --nain-s3: 12px;
+  --nain-s4: 16px;
+  --nain-s6: 24px;
+  --nain-s8: 32px;
+  --nain-s12: 48px;
+  --nain-s16: 64px;
+  --nain-s20: 80px;
+  --nain-s32: 128px;
+
+  /* Geometry & Radii */
+  --nain-radius: 4px;
+  --nain-cap: 999px;
+  --nain-shell: 1200px;
+  --nain-measure: 68ch;
+
+  /* Stroke & Mathematical Proportions (Logo Atom) */
+  --nain-stroke-ratio: 0.14; /* 14.0% of bounding box */
+  --nain-angle-diagonal: -38deg; /* 52.0° above horizontal */
+
+  /* Shadows (Zero-blur solid offset) */
+  --nain-shadow-panel: 22px 22px 0 var(--nain-brand-black);
+  --nain-shadow-panel-mobile: 12px 12px 0 var(--nain-brand-black);
+  --nain-shadow-btn-hover: 6px 6px 0 var(--nain-red);
+  --nain-shadow-btn-alt-hover: 6px 6px 0 var(--nain-blue);
+}

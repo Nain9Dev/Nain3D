@@ -89,7 +89,7 @@ export const api = {
       fileSizeBytes: file.size,
       checksEvaluated: 'C1-C10',
       quantumThreshold: '1e-12 m²',
-      passed: result.passed,
+      passed: result.verdict !== 'NON_CONFORMANT' && result.verdict !== 'INCOMPLETE',
       dualContractEmitted: true
     });
     return result;
