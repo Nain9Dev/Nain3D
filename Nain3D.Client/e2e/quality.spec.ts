@@ -73,6 +73,17 @@ test('language: ?lang wins, the choice is remembered without cookies', async ({ 
   expect(await context.cookies()).toEqual([]);
 });
 
+test('footer: the four contacts are real, named links', async ({ page }) => {
+  await page.goto('/?clock=manual&sample=sample-monitor');
+  await ready(page);
+  const nav = page.getByRole('navigation', { name: 'Contacto' });
+  // On localhost the nav also carries the API docs link, so only the four contacts are asserted.
+  await expect(nav.getByRole('link', { name: 'contact@naindev.com' })).toHaveAttribute('href', 'mailto:contact@naindev.com');
+  await expect(nav.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com\/in\/aitor-nain-mendoza-vallejo/);
+  await expect(nav.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/Nain9Dev/Nain3D');
+  await expect(nav.getByRole('link', { name: 'Web' })).toHaveAttribute('href', 'https://naindev.com');
+});
+
 test('reduced motion: the verdict is immediate and rotation is off', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/?clock=manual&sample=sample-oversized-chair');
