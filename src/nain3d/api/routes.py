@@ -1,5 +1,6 @@
 import hashlib
 import time
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 import trimesh
@@ -12,6 +13,9 @@ from ..ml.classifier import predict_with_llm_if_available
 
 router = APIRouter(prefix="/api/v1/conformance", tags=["Conformance"])
 
+HERO_SAMPLES_DIR = Path(__file__).resolve().parents[3] / "Nain3D.Client" / "public" / "samples"
+KNOWN_SAMPLE_IDS = frozenset({"sample-monitor", "sample-chair", "sample-industrial", "sample-oversized-chair"})
+
 # Cache for generated synthetic benchmark samples
 _SYNTHETIC_SAMPLES_CACHE: Dict[str, bytes] = {}
 
@@ -19,6 +23,12 @@ _SYNTHETIC_SAMPLES_CACHE: Dict[str, bytes] = {}
 def _get_or_create_sample_glb(sample_id: str) -> bytes:
     """Generates synthetic 3D GLB primitives on demand for zero-external-dependency benchmarking."""
     if sample_id in _SYNTHETIC_SAMPLES_CACHE:
+        return _SYNTHETIC_SAMPLES_CACHE[sample_id]
+
+    # Prefer the hero models generated for the client (same bytes as the static site).
+    hero_path = HERO_SAMPLES_DIR / f"{sample_id}.glb"
+    if sample_id in KNOWN_SAMPLE_IDS and hero_path.is_file():
+        _SYNTHETIC_SAMPLES_CACHE[sample_id] = hero_path.read_bytes()
         return _SYNTHETIC_SAMPLES_CACHE[sample_id]
 
     if sample_id == "sample-monitor":

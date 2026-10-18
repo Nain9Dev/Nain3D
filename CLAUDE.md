@@ -27,5 +27,5 @@ Interactive 3D model inspector available at: `http://localhost:5376`
 ### Architecture & Standards
 
 - Backend: FastAPI, Pydantic v2, Trimesh, Scikit-learn Random Forest, optional Ollama LLM integration.
-- Frontend: Vue 3, TypeScript, Vite, Google `<model-viewer>`.
+- Frontend: Vue 3, TypeScript, Vite, three.js (ADR-002). Client checks: `npm run lint`, `npm test`, `npm run test:e2e` (after `npm run build`).
 - Core rule: Fail-closed deterministic conformance. The AI proposes; the technical contract decides.

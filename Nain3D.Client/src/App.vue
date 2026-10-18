@@ -1,319 +1,269 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { api, ApiError } from './services/api';
-import type {
-  EvaluationResult,
-  ProfileDefinition,
-  SampleAsset,
-} from './types/contracts';
+import type { EvaluationResult, ProfileDefinition } from './types/contracts';
+import { lang, t, type MessageKey } from './i18n';
+import { parseUrlState, type SampleId } from './state/urlState';
+import { RECORD_SEQUENCE, recordStateAt, revealStateAt } from './timeline';
+import { buildScaleOverlay } from './scene/overlay';
+import { useClock } from './composables/useClock';
+import { useReducedMotion } from './composables/useReducedMotion';
+import AiProposalPanel from './components/AiProposalPanel.vue';
+import ContractPanel from './components/ContractPanel.vue';
+import LanguageSwitch from './components/LanguageSwitch.vue';
+import SamplePicker from './components/SamplePicker.vue';
+import StageView from './components/StageView.vue';
 
-import HeaderNav from './components/HeaderNav.vue';
-import AssetViewer from './components/AssetViewer.vue';
-import AiProposalCard from './components/AiProposalCard.vue';
-import ContractVerdictCard from './components/ContractVerdictCard.vue';
-import SamplesDrawer from './components/SamplesDrawer.vue';
+/** The tagline owns the first seconds of a recording, then clears the stage for the overlays. */
+const HOOK_MS = 2600;
 
-const isHealthy = ref(false);
-const isEvaluating = ref(false);
-const errorMessage = ref<string | null>(null);
-
-const activeModelSrc = ref<string | null>(null);
-const activeFileName = ref<string | null>(null);
-const activeFileSizeBytes = ref<number | null>(null);
+const urlState = parseUrlState(window.location.search);
+const isRecord = urlState.mode === 'record';
+const reducedMotion = useReducedMotion();
+const clock = useClock(urlState.clock);
 
 const evaluation = ref<EvaluationResult | null>(null);
+const modelBuffer = shallowRef<ArrayBuffer | null>(null);
+const activeSampleId = ref<SampleId | null>(null);
 const profiles = ref<ProfileDefinition[]>([]);
-const samples = ref<SampleAsset[]>([]);
-const isSamplesModalOpen = ref(false);
-const selectedProfileOverride = ref<string | null>(null);
+const selectedProfile = ref<string | null>(null);
+const isEvaluating = ref(false);
+const errorMessage = ref<string | null>(null);
+const autoRotate = ref(true);
+const revealOrigin = ref(0);
+const ready = ref(false);
+let uploadedFile: File | null = null;
+let firstSettle = true;
 
-// Stored current file to allow re-evaluating with profile overrides
-let currentUploadedFile: File | null = null;
+const recordState = computed(() => recordStateAt(clock.now.value));
+const cameraTimeMs = computed(() => (urlState.sequence ? recordState.value.localMs : clock.now.value));
 
-async function checkServerHealth() {
-  try {
-    const res = await api.checkHealth();
-    isHealthy.value = res.status === 'Healthy';
-  } catch {
-    isHealthy.value = false;
-  }
+const reveal = computed(() =>
+  revealStateAt(
+    clock.now.value - revealOrigin.value,
+    evaluation.value?.checks.length ?? 4,
+    reducedMotion.value,
+  ),
+);
+const overlay = computed(() => (evaluation.value ? buildScaleOverlay(evaluation.value) : null));
+const overlayVisible = computed(() => reveal.value.verdictVisible || reveal.value.checksShown >= 2);
+
+const stageLabel = computed(() => {
+  const name = activeSampleId.value ? t(`sample.${activeSampleId.value}` as MessageKey) : '';
+  return `${t('stage.label')}${name ? `: ${name}` : ''}`;
+});
+const sampleName = computed(() =>
+  activeSampleId.value ? t(`sample.${activeSampleId.value}` as MessageKey) : evaluation.value?.asset_name ?? '',
+);
+const portrait = ref(false);
+function measureFormat(): void {
+  portrait.value =
+    urlState.format === 'vertical' || (urlState.format === 'auto' && window.innerHeight > window.innerWidth);
+}
+measureFormat();
+const formatClass = computed(() => (isRecord ? (portrait.value ? 'portrait' : 'landscape') : ''));
+const showDocsLink = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+function currentOrigin(): number {
+  return urlState.sequence ? RECORD_SEQUENCE[recordState.value.index].startMs : clock.now.value;
 }
 
-async function loadInitialMetadata() {
-  try {
-    const [pList, sList] = await Promise.all([
-      api.listProfiles(),
-      api.listSamples(),
-    ]);
-    profiles.value = pList;
-    samples.value = sList;
-
-    // Automatically load the first synthetic sample to show a live 3D asset on startup
-    if (sList.length > 0) {
-      await handleSelectSample(sList[0].id);
-    }
-  } catch (err: unknown) {
-    errorMessage.value = err instanceof Error ? err.message : String(err);
-  }
+async function toBuffer(blobUrl: string): Promise<ArrayBuffer> {
+  const buffer = await (await fetch(blobUrl)).arrayBuffer();
+  URL.revokeObjectURL(blobUrl);
+  return buffer;
 }
 
-async function handleFileSelected(file: File) {
-  currentUploadedFile = file;
-  activeFileName.value = file.name;
-  activeFileSizeBytes.value = file.size;
-  errorMessage.value = null;
-
-  // Create local object URL for model-viewer to display instantly
-  if (activeModelSrc.value && activeModelSrc.value.startsWith('blob:')) {
-    URL.revokeObjectURL(activeModelSrc.value);
-  }
-  activeModelSrc.value = URL.createObjectURL(file);
-
-  await executeEvaluation(file, selectedProfileOverride.value || undefined);
-}
-
-async function handleSelectSample(sampleId: string) {
-  isSamplesModalOpen.value = false;
+async function loadSample(id: SampleId): Promise<void> {
   isEvaluating.value = true;
   errorMessage.value = null;
-
+  uploadedFile = null;
+  activeSampleId.value = id;
   try {
-    const { result, blobUrl } = await api.evaluateSample(
-      sampleId,
-      selectedProfileOverride.value || undefined
-    );
-
-    if (activeModelSrc.value && activeModelSrc.value.startsWith('blob:')) {
-      URL.revokeObjectURL(activeModelSrc.value);
-    }
-
-    activeModelSrc.value = blobUrl;
-    activeFileName.value = `${sampleId}.glb`;
-    activeFileSizeBytes.value = result.asset_size_bytes;
+    const { result, blobUrl } = await api.evaluateSample(id, selectedProfile.value || undefined);
+    const buffer = await toBuffer(blobUrl);
+    modelBuffer.value = buffer;
     evaluation.value = result;
+    revealOrigin.value = currentOrigin();
   } catch (err: unknown) {
-    if (err instanceof ApiError) {
-      errorMessage.value = err.detail || err.message;
-    } else {
-      errorMessage.value = String(err);
-    }
+    errorMessage.value = err instanceof ApiError ? err.detail || err.message : String(err);
   } finally {
     isEvaluating.value = false;
   }
 }
 
-async function executeEvaluation(file: File, overrideProfile?: string) {
+async function handleUpload(file: File): Promise<void> {
   isEvaluating.value = true;
   errorMessage.value = null;
-
+  uploadedFile = file;
+  activeSampleId.value = null;
   try {
-    const result = await api.evaluateFile(file, overrideProfile);
-    evaluation.value = result;
+    modelBuffer.value = await file.arrayBuffer();
+    evaluation.value = await api.evaluateFile(file, selectedProfile.value || undefined);
+    revealOrigin.value = currentOrigin();
   } catch (err: unknown) {
-    if (err instanceof ApiError) {
-      errorMessage.value = err.detail || err.message;
-    } else {
-      errorMessage.value = String(err);
-    }
+    errorMessage.value = err instanceof ApiError ? err.detail || err.message : String(err);
   } finally {
     isEvaluating.value = false;
   }
 }
 
-async function handleProfileChanged(profileName: string) {
-  selectedProfileOverride.value = profileName;
-  if (currentUploadedFile) {
-    await executeEvaluation(currentUploadedFile, profileName);
+async function handleProfileChange(name: string): Promise<void> {
+  selectedProfile.value = name;
+  if (uploadedFile) {
+    evaluation.value = await api.evaluateFile(uploadedFile, name);
+    revealOrigin.value = currentOrigin();
+  } else if (activeSampleId.value) {
+    await loadSample(activeSampleId.value);
   }
 }
 
-onMounted(() => {
-  checkServerHealth();
-  loadInitialMetadata();
+function toggleCompare(): void {
+  const conformant = evaluation.value && evaluation.value.verdict !== 'NON_CONFORMANT';
+  void loadSample(conformant ? 'sample-oversized-chair' : 'sample-industrial');
+}
+
+function replay(): void {
+  revealOrigin.value = clock.now.value;
+}
+
+function onSettled(): void {
+  ready.value = true;
+  if (isRecord && firstSettle) {
+    firstSettle = false;
+    clock.start();
+  }
+}
+
+function onKeydown(event: KeyboardEvent): void {
+  const target = event.target as HTMLElement | null;
+  if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
+  if (event.key.toLowerCase() === 'c' && !event.ctrlKey && !event.metaKey && !event.altKey && !isRecord) {
+    toggleCompare();
+  }
+}
+
+watch(
+  () => recordState.value.index,
+  (index, previous) => {
+    if (urlState.sequence && index !== previous) {
+      evaluation.value = null;
+      void loadSample(RECORD_SEQUENCE[index].sampleId);
+    }
+  },
+);
+
+watch(
+  lang,
+  () => {
+    document.title = `${t('app.name')} · ${t('app.tagline')}`;
+  },
+  { immediate: true },
+);
+
+onMounted(async () => {
+  window.addEventListener('keydown', onKeydown);
+  window.addEventListener('resize', measureFormat);
+  // Hooks for the visual tests; harmless in production.
+  (window as unknown as { __nain: unknown }).__nain = {
+    advance: (ms: number) => clock.advance(ms),
+    now: () => clock.now.value,
+  };
+  if (!isRecord) clock.start();
+  const first: SampleId = urlState.sample ?? (urlState.sequence ? RECORD_SEQUENCE[0].sampleId : 'sample-industrial');
+  void api.listProfiles().then((list) => {
+    profiles.value = list;
+  });
+  await loadSample(first);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown);
+  window.removeEventListener('resize', measureFormat);
 });
 </script>
 
 <template>
-  <div class="app-layout">
-    <div class="content-container">
-      <HeaderNav
-        :is-healthy="isHealthy"
-        @open-samples="isSamplesModalOpen = true"
-      />
+  <div
+    class="app"
+    :class="[isRecord ? 'is-record' : 'is-standard', formatClass]"
+    :data-clock="clock.mode"
+    :data-ready="ready ? 'true' : 'false'"
+    :data-lang="lang"
+  >
+    <a v-if="!isRecord" class="skip-link" href="#main">{{ t('app.skipToContent') }}</a>
 
-      <!-- Error feedback banner if any -->
-      <div v-if="errorMessage" class="glass-panel error-banner">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span>{{ errorMessage }}</span>
+    <header v-if="!isRecord" class="topbar">
+      <div class="brand">
+        <h1>{{ t('app.name') }}</h1>
+        <p>{{ t('app.tagline') }}</p>
       </div>
+      <LanguageSwitch />
+    </header>
 
-      <!-- Main Showcase Grid -->
-      <main class="showcase-grid">
-        <!-- Left: 3D Viewport Column -->
-        <div class="viewport-column">
-          <AssetViewer
-            :model-src="activeModelSrc"
-            :file-name="activeFileName"
-            :file-size-bytes="activeFileSizeBytes"
-            :is-evaluating="isEvaluating"
-            @file-selected="handleFileSelected"
+    <main id="main" class="layout">
+      <section class="stage-col" :aria-label="t('stage.label')">
+        <div class="stage-frame">
+          <StageView
+            :model-buffer="modelBuffer"
+            :overlay="overlay"
+            :overlay-visible="overlayVisible"
+            :label="stageLabel"
+            :record="isRecord"
+            :reduced-motion="reducedMotion"
+            :auto-rotate="autoRotate"
+            :time-ms="cameraTimeMs"
+            :loading="isEvaluating && !modelBuffer"
+            @file-selected="handleUpload"
+            @settled="onSettled"
           />
+          <div v-if="isRecord" class="hook" :class="{ faded: cameraTimeMs > HOOK_MS || (urlState.sequence && recordState.index > 0) }" aria-hidden="true">
+            <p class="hook-name">{{ t('app.name') }}</p>
+            <p class="hook-line">{{ t('app.tagline') }}</p>
+          </div>
+          <p class="sample-chip">{{ sampleName }}</p>
         </div>
+        <SamplePicker
+          v-if="!isRecord"
+          v-model:auto-rotate="autoRotate"
+          :active-id="activeSampleId"
+          :busy="isEvaluating"
+          @select="loadSample"
+          @compare="toggleCompare"
+          @replay="replay"
+          @upload="handleUpload"
+        />
+      </section>
 
-        <!-- Right: Verification Dual-Contract Column -->
-        <div class="dual-contract-column">
-          <AiProposalCard
-            :proposal="evaluation?.ai_proposal || null"
-            :features="evaluation?.features || null"
-          />
+      <section class="side-col">
+        <p v-if="errorMessage" class="error" role="alert">
+          {{ t('status.error') }} {{ t('status.errorDetail', { detail: errorMessage }) }}
+        </p>
+        <AiProposalPanel :proposal="evaluation?.ai_proposal ?? null" :visible="reveal.aiVisible" />
+        <ContractPanel
+          :evaluation="evaluation"
+          :evaluating="isEvaluating"
+          :reveal="reveal"
+          :profiles="profiles"
+          :selected-profile="selectedProfile"
+          :show-profile-picker="!isRecord"
+          @change-profile="handleProfileChange"
+        />
+      </section>
+    </main>
 
-          <ContractVerdictCard
-            :evaluation="evaluation"
-            :profiles="profiles"
-            :selected-profile-id="selectedProfileOverride"
-            @change-profile="handleProfileChanged"
-          />
-        </div>
-      </main>
+    <footer v-if="!isRecord" class="footbar">
+      <span>{{ t('footer.stack') }}</span>
+      <nav>
+        <a v-if="showDocsLink" href="http://localhost:8104/docs" target="_blank" rel="noopener noreferrer">{{ t('footer.api') }}</a>
+        <a href="https://github.com/Nain9Dev/3d-ai-conformance-demo" target="_blank" rel="noopener noreferrer">{{ t('footer.github') }}</a>
+        <a href="https://naindev.com" target="_blank" rel="noopener noreferrer">{{ t('footer.site') }}</a>
+      </nav>
+    </footer>
 
-      <!-- Footer -->
-      <footer class="app-footer glass-panel">
-        <div class="footer-left">
-          <span class="footer-brand font-heading">Nain3D Gateway</span>
-          <span class="footer-sep">·</span>
-          <span class="footer-meta">Deterministic 3D Conformance Engine</span>
-          <span class="footer-sep">·</span>
-          <span class="footer-meta">FastAPI + Pydantic v2 + Trimesh</span>
-        </div>
-        <div class="footer-right">
-          <a href="http://localhost:8104/docs" target="_blank" rel="noopener noreferrer" class="footer-link">Scalar OpenApi</a>
-          <span class="footer-sep">·</span>
-          <a href="https://github.com/Nain9Dev/3d-ai-conformance-demo" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub Repository</a>
-          <span class="footer-sep">·</span>
-          <a href="https://naindev.com" target="_blank" rel="noopener noreferrer" class="footer-link highlight">naindev.com</a>
-        </div>
-      </footer>
+    <div v-if="isRecord && recordState.endCard" class="endcard">
+      <p class="endcard-line">{{ t('record.endCard') }}</p>
+      <p class="endcard-url">{{ t('record.endUrl') }}</p>
     </div>
-
-    <!-- Samples Modal -->
-    <SamplesDrawer
-      :is-open="isSamplesModalOpen"
-      :samples="samples"
-      :is-loading="isEvaluating"
-      @close="isSamplesModalOpen = false"
-      @select-sample="handleSelectSample"
-    />
   </div>
 </template>
-
-<style scoped>
-.app-layout {
-  min-height: 100vh;
-  padding: 1.5rem 1rem 3rem 1rem;
-  display: flex;
-  justify-content: center;
-}
-
-.content-container {
-  width: 100%;
-  max-width: 1240px;
-  display: flex;
-  flex-direction: column;
-}
-
-.error-banner {
-  margin-bottom: 1.5rem;
-  padding: 1rem 1.25rem;
-  background: rgba(244, 63, 94, 0.12);
-  border-left: 4px solid var(--accent-rose);
-  color: #fb7185;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.showcase-grid {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
-}
-
-.viewport-column {
-  display: flex;
-  flex-direction: column;
-}
-
-.dual-contract-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.app-footer {
-  padding: 1.25rem 1.75rem;
-  border-radius: var(--radius-md);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.82rem;
-  color: var(--text-dim);
-}
-
-.footer-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.footer-brand {
-  color: var(--text-main);
-  font-weight: 700;
-}
-
-.footer-sep {
-  color: rgba(255, 255, 255, 0.15);
-}
-
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.footer-link {
-  color: var(--text-muted);
-  transition: color 0.2s;
-}
-
-.footer-link:hover {
-  color: var(--text-main);
-}
-
-.footer-link.highlight {
-  color: #38bdf8;
-  font-weight: 600;
-}
-
-@media (max-width: 1024px) {
-  .showcase-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .app-footer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-</style>

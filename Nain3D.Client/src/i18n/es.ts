@@ -1,0 +1,102 @@
+// Spanish (Spain) is the authoritative source catalogue. Every interface string lives here.
+// Technical terms without an established equivalent (SHA-256, glb, API) stay in English in both languages.
+// `en.ts` is typed against this object: a missing key there is a compile error.
+export const es = {
+  'app.name': 'Nain3D Gateway',
+  'app.tagline': 'La IA propone, el contrato dispone.',
+  'app.skipToContent': 'Saltar al contenido',
+  'app.language': 'Idioma',
+  'app.languageEs': 'Español',
+  'app.languageEn': 'English',
+
+  'stage.label': 'Visor 3D del modelo',
+  'stage.loading': 'Cargando modelo…',
+  'stage.dropHint': 'Suelta un archivo .glb para evaluarlo',
+  'stage.limitLabel': 'Límite {limit} m',
+  'stage.modelLabel': 'Modelo {size} m',
+  'stage.exceeds': 'Excede el límite',
+  'stage.fits': 'Dentro del límite',
+  'stage.rulerUnit': '{n} m',
+
+  'steps.model': 'Modelo',
+  'steps.ai': 'La IA propone',
+  'steps.contract': 'El contrato dispone',
+
+  'ai.title': 'La IA propone',
+  'ai.subtitle': 'Clasificación probabilística',
+  'ai.category': 'Categoría propuesta',
+  'ai.confidence': 'Confianza',
+  'ai.waiting': 'Elige un modelo para ver la propuesta.',
+
+  'contract.title': 'El contrato dispone',
+  'contract.subtitle': 'Comprobaciones deterministas',
+  'contract.profile': 'Contrato aplicado',
+  'contract.waiting': 'Esperando un modelo para comprobar el contrato.',
+  'contract.evaluating': 'Evaluando…',
+  'contract.latency': 'Evaluado en {ms} ms',
+  'contract.hash': 'SHA-256',
+  'contract.failClosed': 'Si falla una comprobación bloqueante, el activo se rechaza.',
+
+  'check.budget_triangles': 'Presupuesto de triángulos',
+  'check.metric_scale': 'Extensión física',
+  'check.integrity_watertight': 'Estanqueidad',
+  'check.degenerate_faces': 'Caras degeneradas',
+  'check.valueOfLimit': '{value} de {limit}',
+  'check.valueWithRule': '{value} · {rule}',
+  'check.watertightYes': 'Sólido cerrado',
+  'check.watertightNo': 'Superficie abierta',
+  'check.watertightRequired': 'Obligatoria',
+  'check.watertightOptional': 'Opcional',
+  'check.passed': 'Cumple',
+  'check.failed': 'Incumple',
+  'check.advisory': 'Aviso',
+  'check.pending': 'Pendiente',
+
+  'verdict.CONFORMANT': 'Conforme',
+  'verdict.CONFORMANT_WITH_FINDINGS': 'Conforme con observaciones',
+  'verdict.NON_CONFORMANT': 'No conforme',
+  'verdict.INCOMPLETE': 'Incompleto',
+  'verdict.subCONFORMANT': 'Cumple todos los límites del contrato.',
+  'verdict.subCONFORMANT_WITH_FINDINGS': 'Cumple lo bloqueante; hay avisos.',
+  'verdict.subNON_CONFORMANT': 'La IA propuso, pero el contrato vetó el activo.',
+  'verdict.subINCOMPLETE': 'Evaluación incompleta: se rechaza por defecto.',
+  'verdict.announce': 'Veredicto: {verdict}.',
+  'verdict.failedChecks': 'Incumple: {checks}.',
+
+  'category.Monitor': 'Monitor',
+  'category.Mobiliario (Chair)': 'Mobiliario (silla)',
+  'category.Pieza Industrial': 'Pieza industrial',
+  'category.Prop / Decorativo': 'Prop / decorativo',
+
+  'sample.sample-monitor': 'Monitor',
+  'sample.sample-chair': 'Silla',
+  'sample.sample-industrial': 'Válvula industrial',
+  'sample.sample-oversized-chair': 'Silla gigante',
+  'sample.sample-monitor.detail': 'Conforme',
+  'sample.sample-chair.detail': 'Conforme',
+  'sample.sample-industrial.detail': 'Conforme',
+  'sample.sample-oversized-chair.detail': 'No conforme',
+
+  'actions.samples': 'Modelos de ejemplo',
+  'actions.upload': 'Subir .glb',
+  'actions.compare': 'Comparar conforme y no conforme',
+  'actions.compareShort': 'Comparar',
+  'actions.replay': 'Repetir revelado',
+  'actions.autoRotate': 'Rotación automática',
+  'actions.sampleSwitcher': 'Elegir modelo de ejemplo',
+  'actions.shortcutHint': 'Atajo: C',
+
+  'status.evaluating': 'Evaluando el modelo.',
+  'status.error': 'No se ha podido evaluar el modelo.',
+  'status.errorDetail': 'Detalle: {detail}',
+
+  'footer.api': 'Documentación de la API',
+  'footer.github': 'Código en GitHub',
+  'footer.site': 'naindev.com',
+  'footer.stack': 'Motor determinista · FastAPI · Pydantic v2 · Trimesh',
+
+  'record.endCard': 'La IA propone, el contrato dispone.',
+  'record.endUrl': '3d.naindev.com',
+} as const;
+
+export type MessageKey = keyof typeof es;

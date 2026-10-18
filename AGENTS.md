@@ -50,7 +50,7 @@ src/nain3d/
   ├── domain/       # Pydantic v2 domain models, contracts, profile specifications
   ├── engine/       # Trimesh geometry analysis, bounds, watertightness, polygon budgets
   └── ml/           # Local classification models (Random Forest inference + Ollama LLM client)
-Nain3D.Client/      # Vue 3 + TypeScript + Vite 3D interactive viewer (<model-viewer>)
+Nain3D.Client/      # Vue 3 + TypeScript + Vite 3D interactive viewer (three.js, ADR-002)
 ```
 
 ## 5. Verification gate
