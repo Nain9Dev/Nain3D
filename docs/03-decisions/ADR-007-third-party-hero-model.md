@@ -26,7 +26,7 @@ Python engine and the in-browser evaluator:
    Credits live in `src/samples/catalog.ts`; a test requires author, licence URL and source for every credited sample.
 3. Source files stay outside the repository (`D:/3D-Assets`). `npm run optimize:models` reads
    `tools/model-sources.json`, verifies each source SHA-256, keeps one material variant, bakes transforms and scale
-   into the vertices, resizes textures to 1024 px JPEG and prunes unused data (7.8 MB to 1.2 MB).
+   into the vertices, resizes textures (colour 1024 px, data maps 512 px, JPEG) and prunes unused data (7.8 MB to 0.83 MB).
 4. Geometry stays **uncompressed** (no Draco, no meshopt): the Python engine cannot decode them, so one file must
    give the same verdict in both engines.
 5. Add devDependencies `@gltf-transform/core`, `@gltf-transform/extensions`, `@gltf-transform/functions` (MIT) and
@@ -36,7 +36,7 @@ Python engine and the in-browser evaluator:
 
 ## Consequences
 
-- Two third-party GLBs (1.2 MB each) are committed under `public/samples/`. The owner's asset README forbids
+- Two third-party GLBs (0.83 MB each) are committed under `public/samples/`. The owner's asset README forbids
   heavy 3D files in repositories; this is a deliberate, small exception limited to licensed demo assets.
 - Only CC0 and CC BY models are acceptable; the licence is verified at the source before a model is added.
 - The in-browser evaluator is a heuristic: it reports the sneaker as a watertight `Pieza Industrial`, while the

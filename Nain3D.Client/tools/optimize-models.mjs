@@ -56,11 +56,20 @@ async function build(model) {
   await doc.transform(
     prune(),
     dedup(),
+    // Colour keeps full detail; data maps (normal, occlusion/roughness/metalness) tolerate half resolution.
     textureCompress({
       encoder: sharp,
       targetFormat: 'jpeg',
+      slots: /baseColor|emissive/,
       resize: [model.textureSize, model.textureSize],
       quality: 85,
+    }),
+    textureCompress({
+      encoder: sharp,
+      targetFormat: 'jpeg',
+      slots: /normal|occlusion|metallicRoughness/,
+      resize: [model.textureSize / 2, model.textureSize / 2],
+      quality: 80,
     }),
   );
 
