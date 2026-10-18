@@ -25,6 +25,10 @@ and sample models only: business rules, API contracts and schemas are unchanged.
   one-line credit in the 3D frame, `npm run optimize:models` pipeline (7.8 MB to 0.83 MB, source hash checked),
   data-driven sample catalogue `src/samples/catalog.ts`. ADR-007 (`Proposed`).
 
+- Call to action (spec 003): closing card of the recording with name, headline and four contacts
+  (`naindev.com`, `contact@naindev.com`, LinkedIn, GitHub) in Spanish and English, kept for 5 s inside the 9:16
+  safe zones; the page footer lists the same contacts as named links. Contact data in `src/contact/contacts.ts`.
+
 ### Changed
 
 - Client renderer: `<model-viewer>` replaced by a lazily loaded three.js stage (ADR-002).

@@ -96,12 +96,12 @@ export const es = {
   'status.errorDetail': 'Detalle: {detail}',
 
   'footer.api': 'Documentación de la API',
-  'footer.github': 'Código en GitHub',
-  'footer.site': 'naindev.com',
+  'footer.contact': 'Contacto',
   'footer.stack': 'Motor determinista · FastAPI · Pydantic v2 · Trimesh',
 
   'record.endCard': 'La IA propone, el contrato dispone.',
-  'record.endUrl': '3d.naindev.com',
+  'cta.headline': 'Arquitecto de software full stack',
+  'cta.lead': 'Hablemos',
 } as const;
 
 export type MessageKey = keyof typeof es;

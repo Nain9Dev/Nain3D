@@ -63,6 +63,19 @@ for (const lang of ['es', 'en'] as const) {
         await shot(page, `record-${format}-${lang}-4-non-conformant`);
         await advance(page, 4000);
         await shot(page, `record-${format}-${lang}-5-end-card`);
+        const card = page.locator('.endcard');
+        await expect(card).toContainText('Aitor Nain');
+        await expect(card).toContainText(lang === 'es' ? 'Arquitecto de software full stack' : 'Full stack software architect');
+        for (const value of ['naindev.com', 'contact@naindev.com', 'in/aitor-nain-mendoza-vallejo', 'github.com/Nain9Dev/Nain3D']) {
+          await expect(card).toContainText(value);
+        }
+        // Every line of the card must sit inside the safe zones (vertical: 230 px top, 340 px bottom).
+        const box = await page.locator('.endcard-line').first().boundingBox();
+        const last = await page.locator('.endcard-contacts li').last().boundingBox();
+        if (format === 'vertical' && box && last) {
+          expect(box.y).toBeGreaterThanOrEqual(230);
+          expect(last.y + last.height).toBeLessThanOrEqual(1920 - 340);
+        }
 
         const overflow = await page.evaluate(() => ({
           x: document.documentElement.scrollWidth - window.innerWidth,

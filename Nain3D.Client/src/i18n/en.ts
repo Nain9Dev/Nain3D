@@ -97,10 +97,10 @@ export const en: Record<MessageKey, string> = {
   'status.errorDetail': 'Detail: {detail}',
 
   'footer.api': 'API documentation',
-  'footer.github': 'Source on GitHub',
-  'footer.site': 'naindev.com',
+  'footer.contact': 'Contact',
   'footer.stack': 'Deterministic engine · FastAPI · Pydantic v2 · Trimesh',
 
   'record.endCard': 'The AI proposes, the contract decides.',
-  'record.endUrl': '3d.naindev.com',
+  'cta.headline': 'Full stack software architect',
+  'cta.lead': "Let's talk",
 };
