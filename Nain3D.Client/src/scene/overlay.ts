@@ -8,7 +8,7 @@ export interface ScaleOverlay {
   /** True when the API's `metric_scale` check did not pass (or is absent: fail-closed). */
   exceeds: boolean;
   tickStep: number;
-  /** Ruler marks in metres, from `tickStep` up to the larger of model height and limit. */
+  /** Ruler marks in metres, from `tickStep` up to the larger of model height (Y extent) and limit. */
   ticks: number[];
 }
 
@@ -22,7 +22,8 @@ export function buildScaleOverlay(evaluation: EvaluationResult): ScaleOverlay {
   const check = evaluation.checks.find((c) => c.name === 'metric_scale');
   const { extents } = evaluation.features;
   const limit = evaluation.applied_profile.max_dimension_m;
-  const span = Math.max(limit, evaluation.features.max_dimension_m);
+  // The ruler is vertical, so it only needs to reach the taller of the model and the limit box.
+  const span = Math.max(limit, extents[1]);
   const tickStep = NICE_STEPS.find((step) => span / step <= 8) ?? NICE_STEPS[NICE_STEPS.length - 1];
   const count = Math.max(1, Math.ceil(span / tickStep - 1e-9));
   const ticks = Array.from({ length: count }, (_, i) => Math.round((i + 1) * tickStep * 1000) / 1000);

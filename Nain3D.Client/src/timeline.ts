@@ -56,8 +56,8 @@ export interface RecordSegment {
 
 /** Hook (0-2 s) is the conformant hero; the non-conformant sample lands the contrast. */
 export const RECORD_SEQUENCE: readonly RecordSegment[] = [
-  { sampleId: 'sample-industrial', startMs: 0 },
-  { sampleId: 'sample-oversized-chair', startMs: 7000 },
+  { sampleId: 'sample-shoe', startMs: 0 },
+  { sampleId: 'sample-oversized-shoe', startMs: 7000 },
 ];
 export const RECORD_END_CARD_AT = 16500;
 export const RECORD_TOTAL_MS = 20000;

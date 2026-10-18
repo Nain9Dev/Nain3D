@@ -31,14 +31,14 @@ for (const lang of ['es', 'en'] as const) {
     test.use({ viewport: FORMATS.horizontal });
 
     test('start, conformant, non-conformant', async ({ page }) => {
-      await open(page, `lang=${lang}&sample=sample-industrial`);
+      await open(page, `lang=${lang}&sample=sample-shoe`);
       await advance(page, 800);
       await shot(page, `standard-${lang}-1-start`);
       await advance(page, 5200);
       await shot(page, `standard-${lang}-2-conformant`);
 
-      await page.getByRole('button', { name: /gigante|giant/i }).click();
-      await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
+      await page.getByRole('button', { name: /zapatilla gigante|giant sneaker/i }).click();
+      await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true', { timeout: 30_000 });
       await page.waitForTimeout(800);
       await advance(page, 6500);
       await shot(page, `standard-${lang}-3-non-conformant`);
@@ -58,7 +58,7 @@ for (const lang of ['es', 'en'] as const) {
         await advance(page, 2600);
         await shot(page, `record-${format}-${lang}-3-conformant`);
         await advance(page, 4000); // t = 10.4 s: second segment started
-        await page.waitForTimeout(1500);
+        await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
         await advance(page, 5200);
         await shot(page, `record-${format}-${lang}-4-non-conformant`);
         await advance(page, 4000);

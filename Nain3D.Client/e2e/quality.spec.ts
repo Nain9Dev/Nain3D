@@ -15,7 +15,7 @@ async function advance(page: Page, ms: number): Promise<void> {
 
 for (const lang of ['es', 'en'] as const) {
   test(`WCAG 2.2 AA: no axe violations (${lang}, both verdicts)`, async ({ page }) => {
-    await page.goto(`/?clock=manual&lang=${lang}&sample=sample-industrial`);
+    await page.goto(`/?clock=manual&lang=${lang}&sample=sample-shoe`);
     await ready(page);
     await advance(page, 6000);
     const scan = () =>
@@ -26,7 +26,7 @@ for (const lang of ['es', 'en'] as const) {
     expect((await scan()).violations).toEqual([]);
 
     await page.keyboard.press('c');
-    await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
+    await ready(page);
     await page.waitForTimeout(600);
     await advance(page, 6000);
     await expect(page.locator('.tone-bad')).toBeVisible();
@@ -35,23 +35,23 @@ for (const lang of ['es', 'en'] as const) {
 }
 
 test('keyboard: every control is reachable and "c" compares', async ({ page }) => {
-  await page.goto('/?clock=manual&sample=sample-industrial');
+  await page.goto('/?clock=manual&sample=sample-shoe');
   await ready(page);
   await advance(page, 6000);
   await expect(page.locator('.verdict.visible .badge')).toContainText('Conforme');
 
   const reachable = new Set<string>();
-  for (let i = 0; i < 16; i += 1) {
+  for (let i = 0; i < 22; i += 1) {
     await page.keyboard.press('Tab');
     reachable.add(await page.evaluate(() => document.activeElement?.textContent?.trim().slice(0, 24) ?? ''));
   }
-  for (const name of ['Español', 'English', 'Silla gigante', 'Comparar', 'Subir .glb']) {
+  for (const name of ['Español', 'English', 'Zapatilla gigante', 'Comparar', 'Subir .glb']) {
     expect([...reachable].some((text) => text.includes(name)), name).toBe(true);
   }
 
   await page.locator('body').click({ position: { x: 5, y: 600 } });
   await page.keyboard.press('c');
-  await page.waitForTimeout(800);
+  await ready(page); // The giant sneaker is loaded and drawn (software WebGL can take several seconds).
   await advance(page, 6000);
   await expect(page.locator('.verdict.visible .badge')).toContainText('No conforme');
 });

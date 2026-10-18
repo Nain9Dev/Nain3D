@@ -20,7 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'fileSelected', file: File): void;
   /** The model and overlay are in the scene and a frame has been drawn. */
-  (e: 'settled'): void;
+  (e: 'settled', buffer: ArrayBuffer): void;
 }>();
 
 const root = ref<HTMLDivElement | null>(null);
@@ -42,7 +42,7 @@ function sync(): void {
         await current.loadGlb(buffer.slice(0));
       }
       current.setOverlay(overlay);
-      if (buffer) emit('settled');
+      if (buffer) emit('settled', buffer);
     })
     .catch((error: unknown) => {
       // A model that cannot be parsed must not block later loads.

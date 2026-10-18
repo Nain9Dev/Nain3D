@@ -21,6 +21,10 @@ and sample models only: business rules, API contracts and schemas are unchanged.
   `docs/assets/visual-redesign/`; measurements in `docs/visual-redesign-metrics.md`.
 - `tests/test_hero_samples.py`: each generated GLB keeps its documented verdict in the Python engine.
 
+- Photoreal hero pair `sample-shoe` / `sample-oversized-shoe` (Materials Variants Shoe, Shopify, CC BY 4.0):
+  one-line credit in the 3D frame, `npm run optimize:models` pipeline (7.8 MB to 0.83 MB, source hash checked),
+  data-driven sample catalogue `src/samples/catalog.ts`. ADR-007 (`Proposed`).
+
 ### Changed
 
 - Client renderer: `<model-viewer>` replaced by a lazily loaded three.js stage (ADR-002).

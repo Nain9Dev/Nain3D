@@ -68,6 +68,11 @@ export const es = {
   'category.Pieza Industrial': 'Pieza industrial',
   'category.Prop / Decorativo': 'Prop / decorativo',
 
+  'sample.sample-shoe': 'Zapatilla',
+  'sample.sample-oversized-shoe': 'Zapatilla gigante',
+  'sample.sample-shoe.detail': 'Conforme',
+  'sample.sample-oversized-shoe.detail': 'No conforme',
+  'credit.model': 'Modelo: {credit}',
   'sample.sample-monitor': 'Monitor',
   'sample.sample-chair': 'Silla',
   'sample.sample-industrial': 'Válvula industrial',

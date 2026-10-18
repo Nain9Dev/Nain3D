@@ -18,6 +18,24 @@ and `.../after/metrics.json`. Date: 2026-10-18.
 | Third-party hosts at runtime | 6 (Google APIs, Google Fonts x2, brand.naindev.com, naindev.com) | 1 (naindev.com ecosystem bar) |
 | Sample GLBs | 12 triangles each, 1 kB | 676 to 6,848 triangles, 26 to 215 kB |
 
+### With the photoreal sneaker as first model (ADR-007)
+
+Measured the same way after switching the first screen to `sample-shoe` (0.83 MB GLB, 22,700 triangles;
+colour texture 1024 px, normal and roughness maps 512 px; `after/metrics.json` holds this run). The first
+build of the model used 1024 px for every map (1.18 MB, 1,418 kB per cold load).
+
+| Metric | Procedural valve (table above) | Sneaker hero |
+|:---|---:|---:|
+| LCP, cold, median | 140 ms | 112 ms |
+| Transferred per cold load, median | 452 kB | 1,065 kB (+151 % over the original 424 kB) |
+| First 3D frame under software WebGL | 388 to 545 ms | 12.7 s in one run, above the 15 s probe limit in two |
+
+The detailed model costs about 0.6 MB more, so the +10 % transfer limit set in ADR-002 no longer holds for
+the first screen; LCP is unaffected because the brand heading still paints first. The slow first 3D frame
+is SwiftShader (CPU) decoding and shading the PBR textures; it is not representative of a GPU. The page
+shows the interface immediately and the model appears when ready. Geometry (0.7 MB, float32) is now
+the bulk; quantisation would shrink it but the Python engine would stop reading it.
+
 Reading the numbers:
 
 - LCP improves because the brand heading is the largest text and paints with the first frame, fonts are
