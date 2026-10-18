@@ -2,13 +2,10 @@ export type AppMode = 'standard' | 'record';
 export type ClockMode = 'auto' | 'manual';
 export type FormatMode = 'auto' | 'vertical' | 'horizontal';
 
-export const SAMPLE_IDS = [
-  'sample-monitor',
-  'sample-chair',
-  'sample-industrial',
-  'sample-oversized-chair',
-] as const;
-export type SampleId = (typeof SAMPLE_IDS)[number];
+import { SAMPLE_IDS, type SampleId } from '../samples/catalog';
+
+export { SAMPLE_IDS };
+export type { SampleId };
 
 export interface UrlState {
   mode: AppMode;

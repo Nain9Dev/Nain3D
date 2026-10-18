@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import { api, ApiError } from './services/api';
 import type { EvaluationResult, ProfileDefinition } from './types/contracts';
 import { lang, t, type MessageKey } from './i18n';
+import { creditLine } from './samples/catalog';
 import { parseUrlState, type SampleId } from './state/urlState';
 import { RECORD_SEQUENCE, recordStateAt, revealStateAt } from './timeline';
 import { buildScaleOverlay } from './scene/overlay';
@@ -16,6 +17,9 @@ import StageView from './components/StageView.vue';
 
 /** The tagline owns the first seconds of a recording, then clears the stage for the overlays. */
 const HOOK_MS = 2600;
+/** The pair used by the compare gesture and the first screen: same model, right and wrong scale. */
+const HERO_CONFORMANT: SampleId = 'sample-shoe';
+const HERO_NON_CONFORMANT: SampleId = 'sample-oversized-shoe';
 
 const urlState = parseUrlState(window.location.search);
 const isRecord = urlState.mode === 'record';
@@ -55,6 +59,7 @@ const stageLabel = computed(() => {
 const sampleName = computed(() =>
   activeSampleId.value ? t(`sample.${activeSampleId.value}` as MessageKey) : evaluation.value?.asset_name ?? '',
 );
+const credit = computed(() => creditLine(activeSampleId.value));
 const portrait = ref(false);
 function measureFormat(): void {
   portrait.value =
@@ -76,6 +81,7 @@ async function toBuffer(blobUrl: string): Promise<ArrayBuffer> {
 
 async function loadSample(id: SampleId): Promise<void> {
   isEvaluating.value = true;
+  ready.value = false; // Set again once the new model is on screen.
   errorMessage.value = null;
   uploadedFile = null;
   activeSampleId.value = id;
@@ -120,14 +126,16 @@ async function handleProfileChange(name: string): Promise<void> {
 
 function toggleCompare(): void {
   const conformant = evaluation.value && evaluation.value.verdict !== 'NON_CONFORMANT';
-  void loadSample(conformant ? 'sample-oversized-chair' : 'sample-industrial');
+  void loadSample(conformant ? HERO_NON_CONFORMANT : HERO_CONFORMANT);
 }
 
 function replay(): void {
   revealOrigin.value = clock.now.value;
 }
 
-function onSettled(): void {
+function onSettled(buffer: ArrayBuffer): void {
+  // Ignore frames drawn for a model that has already been replaced.
+  if (buffer !== modelBuffer.value || isEvaluating.value) return;
   ready.value = true;
   if (isRecord && firstSettle) {
     firstSettle = false;
@@ -170,7 +178,7 @@ onMounted(async () => {
     now: () => clock.now.value,
   };
   if (!isRecord) clock.start();
-  const first: SampleId = urlState.sample ?? (urlState.sequence ? RECORD_SEQUENCE[0].sampleId : 'sample-industrial');
+  const first: SampleId = urlState.sample ?? (urlState.sequence ? RECORD_SEQUENCE[0].sampleId : HERO_CONFORMANT);
   void api.listProfiles().then((list) => {
     profiles.value = list;
   });
@@ -222,6 +230,7 @@ onBeforeUnmount(() => {
             <p class="hook-line">{{ t('app.tagline') }}</p>
           </div>
           <p class="sample-chip">{{ sampleName }}</p>
+          <p v-if="credit" class="credit">{{ t('credit.model', { credit }) }}</p>
         </div>
         <SamplePicker
           v-if="!isRecord"

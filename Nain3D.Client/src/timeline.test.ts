@@ -43,7 +43,7 @@ describe('revealStateAt', () => {
 
 describe('recordStateAt', () => {
   it('plays conformant first, then non-conformant, then the end card', () => {
-    expect(RECORD_SEQUENCE.map((s) => s.sampleId)).toEqual(['sample-industrial', 'sample-oversized-chair']);
+    expect(RECORD_SEQUENCE.map((s) => s.sampleId)).toEqual(['sample-shoe', 'sample-oversized-shoe']);
     expect(recordStateAt(0)).toMatchObject({ index: 0, localMs: 0, endCard: false });
     const second = recordStateAt(RECORD_SEQUENCE[1].startMs + 100);
     expect(second).toMatchObject({ index: 1, localMs: 100, endCard: false });

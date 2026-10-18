@@ -1,0 +1,19 @@
+{
+  "assetsDirEnv": "NAIN3D_ASSETS_DIR",
+  "assetsDirDefault": "D:/3D-Assets",
+  "models": [
+    {
+      "id": "sample-shoe",
+      "file": "04_Industry_Reference_Benchmarks/MaterialsVariantsShoe.glb",
+      "sha256": "e1d7cb190382111e5a5b37b51e9a7f007f7eb2ab1b6185e0188e8d0a0d1265a7",
+      "textureSize": 1024
+    },
+    {
+      "id": "sample-oversized-shoe",
+      "file": "04_Industry_Reference_Benchmarks/MaterialsVariantsShoe.glb",
+      "sha256": "e1d7cb190382111e5a5b37b51e9a7f007f7eb2ab1b6185e0188e8d0a0d1265a7",
+      "textureSize": 1024,
+      "scaleToMaxExtentM": 5.0
+    }
+  ]
+}

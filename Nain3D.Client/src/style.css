@@ -134,6 +134,28 @@ select:focus-visible {
   font: 700 0.85rem var(--nain-font-sans);
 }
 
+/* Attribution required by the model's licence (CC BY): one small line inside the frame, so videos carry it too. */
+.credit {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  max-width: 60%;
+  white-space: nowrap;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(12, 18, 34, 0.72);
+  color: #dfe7f3;
+  font: 500 0.72rem var(--nain-font-mono);
+  text-align: right;
+}
+.is-record .credit {
+  right: calc(24 * var(--u));
+  bottom: calc(24 * var(--u));
+  max-width: none;
+  font-size: calc(17 * var(--u));
+  padding: calc(4 * var(--u)) calc(12 * var(--u));
+}
+
 .side-col {
   display: flex;
   flex-direction: column;

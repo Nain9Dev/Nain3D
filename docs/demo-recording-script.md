@@ -11,7 +11,7 @@ conformant and a non-conformant asset is the hook. Total runtime of the built-in
 | Horizontal 16:9, Spanish | `https://3d.naindev.com/?mode=record` on a 1920x1080 viewport |
 | English version (for subtitles) | add `&lang=en` |
 | Force a format regardless of window size | add `&format=vertical` or `&format=horizontal` |
-| A single sample instead of the sequence | add `&sample=sample-industrial` (or `sample-monitor`, `sample-chair`, `sample-oversized-chair`) |
+| A single sample instead of the sequence | add `&sample=sample-shoe` (or `sample-oversized-shoe`, `sample-industrial`, `sample-monitor`, `sample-chair`, `sample-oversized-chair`) |
 
 Local run: `npm --prefix Nain3D.Client run dev` and open `http://localhost:5376/?mode=record`.
 
@@ -21,18 +21,18 @@ Times are from the first rendered frame of the model.
 
 | Time | What the viewer sees |
 |:---|:---|
-| **0.0-2.0 s (hook)** | Brass-and-steel industrial valve with a red handwheel, lit by studio light, soft shadow, slow eased rotation. Large headline *La IA propone, el contrato dispone.* over the stage. Nothing else competes for attention. |
-| 0.5 s | The *La IA propone* card fills in: *Pieza industrial*, confidence 88 %. |
+| **0.0-2.0 s (hook)** | Photoreal blue sneaker (22,700 triangles, PBR textures), lit by studio light, soft shadow, slow eased rotation. A one-line credit (*Modelo: Materials Variants Shoe · Shopify · CC BY 4.0*) sits in the corner of the frame. Large headline *La IA propone, el contrato dispone.* over the stage. Nothing else competes for attention. |
+| 0.5 s | The *La IA propone* card fills in with the engine's proposal (88 % on the static site). |
 | 1.3-3.3 s | The four checks are ticked one by one, every 0.65 s: triangle budget, physical extent, watertightness, degenerate faces. A thin green outline appears around the model at 1.95 s: *Dentro del límite*. The headline fades out at 2.6 s. |
 | 3.95 s | Green badge **Conforme** pops in, the card shadow turns green. |
 | 4.4-5.1 s | Latency counter *Evaluado en N ms* counts up, SHA-256 shown. |
-| **7.0 s (cut)** | The giant chair replaces the valve. The *AI* card says *Mobiliario (silla)*, 79 %. |
-| 8.3-10.3 s | Checks tick again; the **Extensión física** row turns red (*5 m de 3 m*). From 8.95 s a red box shows the real size, a white box shows the 3 m limit, a ruler marks the metres and a red label reads *Excede el límite*. |
+| **7.0 s (cut)** | The same sneaker, scaled to 5 m, replaces the first. Same model, wrong scale. |
+| 8.3-10.3 s | Checks tick again; the **Extensión física** row turns red (*5 m de 1,2 m* on the static site). From 8.95 s a red box shows the real size, a white box shows the profile limit, a ruler marks the metres and a red label reads *Excede el límite*. |
 | 11.0 s | Red badge **No conforme**, red card shadow, *Incumple: Extensión física.* |
 | **16.5-20.0 s (end)** | Dark end card: *La IA propone, el contrato dispone.* and `3d.naindev.com`. |
 
-What the viewer ends with: the AI can be confident (79 %) and still be vetoed; the contract has the
-last word.
+What the viewer ends with: the AI can be confident and still be vetoed; the contract has the last word.
+The limit shown (1,2 m) depends on the category the engine proposes; any category rejects a 5 m object.
 
 ## Steps to record
 

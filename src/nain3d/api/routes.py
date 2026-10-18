@@ -14,7 +14,16 @@ from ..ml.classifier import predict_with_llm_if_available
 router = APIRouter(prefix="/api/v1/conformance", tags=["Conformance"])
 
 HERO_SAMPLES_DIR = Path(__file__).resolve().parents[3] / "Nain3D.Client" / "public" / "samples"
-KNOWN_SAMPLE_IDS = frozenset({"sample-monitor", "sample-chair", "sample-industrial", "sample-oversized-chair"})
+KNOWN_SAMPLE_IDS = frozenset(
+    {
+        "sample-monitor",
+        "sample-chair",
+        "sample-industrial",
+        "sample-oversized-chair",
+        "sample-shoe",
+        "sample-oversized-shoe",
+    }
+)
 
 # Cache for generated synthetic benchmark samples
 _SYNTHETIC_SAMPLES_CACHE: Dict[str, bytes] = {}
@@ -91,6 +100,20 @@ async def list_samples():
             "category": "Mobiliario (Chair)",
             "expected_verdict": "NON_CONFORMANT",
             "description": "Exceeds scale bounds (5.0m > 3.0m limit). Demonstrates deterministic rejection.",
+        },
+        {
+            "id": "sample-shoe",
+            "name": "Sneaker (Materials Variants Shoe, CC BY 4.0, Shopify)",
+            "category": "Prop / Decorativo",
+            "expected_verdict": "CONFORMANT",
+            "description": "Textured PBR sneaker (0.30 x 0.15 x 0.12 m, 22,700 triangles), within every profile budget.",
+        },
+        {
+            "id": "sample-oversized-shoe",
+            "name": "Giant Sneaker (Violation Demo, CC BY 4.0, Shopify)",
+            "category": "Prop / Decorativo",
+            "expected_verdict": "NON_CONFORMANT",
+            "description": "Same sneaker scaled to 5.0 m: exceeds every profile's scale limit.",
         },
     ]
 

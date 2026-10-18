@@ -69,6 +69,11 @@ export const en: Record<MessageKey, string> = {
   'category.Pieza Industrial': 'Industrial part',
   'category.Prop / Decorativo': 'Prop / decorative',
 
+  'sample.sample-shoe': 'Sneaker',
+  'sample.sample-oversized-shoe': 'Giant sneaker',
+  'sample.sample-shoe.detail': 'Conformant',
+  'sample.sample-oversized-shoe.detail': 'Non-conformant',
+  'credit.model': 'Model: {credit}',
   'sample.sample-monitor': 'Monitor',
   'sample.sample-chair': 'Chair',
   'sample.sample-industrial': 'Industrial valve',

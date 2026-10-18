@@ -1,22 +1,22 @@
 {
   "baseUrl": "http://localhost:5376/",
   "lcpMsRuns": [
-    248,
-    140,
-    112
+    312,
+    104,
+    120
   ],
-  "lcpMsMedian": 140,
+  "lcpMsMedian": 120,
   "firstModelFrameMsRuns": [
-    6541,
-    423,
-    388
+    null,
+    12754,
+    null
   ],
   "transferredBytesPerColdLoad": [
-    451905,
-    511095,
-    451903
+    1417843,
+    1449004,
+    1417852
   ],
-  "transferredBytesMedian": 451905,
+  "transferredBytesMedian": 1417852,
   "hosts": [
     "",
     "localhost:5376",
