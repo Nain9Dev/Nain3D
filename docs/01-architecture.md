@@ -57,6 +57,9 @@ flowchart LR
   kept in `localStorage` (`nain3d.lang`), never in cookies.
 - **Samples:** `Nain3D.Client/tools/generate-samples.mjs` writes the four GLBs under `public/samples/`; the API
   serves the same files when present. Static hosting (3d.naindev.com) has no API: verdicts come from the
-  in-browser evaluator, a heuristic implementation of the same four checks. It reads POSITION accessor
-  bounds without node transforms, never reports degenerate faces, and proposes the category from the file
-  name and proportions. Only the Python engine can fail the mesh-defect checks.
+  in-browser evaluator (`src/services/mockEvaluator.ts`), an implementation of the same four checks. Extents come
+  from POSITION accessor bounds (node transforms ignored, as in the Python engine's raw geometry). Watertightness
+  (every edge shared by exactly two faces, per primitive) and degenerate faces (area at most 1e-12 m2) are read from
+  the triangle data by `src/services/glbMesh.ts`, and tests compare the results with the Python engine on the
+  bundled samples. Geometry it cannot decode (Draco, meshopt, quantisation, strips) gives an `INCOMPLETE` verdict,
+  never an approval. The AI category remains a heuristic based on file name and proportions.

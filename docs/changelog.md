@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Honest in-browser evaluator
+
+- The static site's evaluator now reads watertightness (every edge shared by two faces) and degenerate faces (area at
+  most 1e-12 m2) from the GLB triangle data instead of guessing from the triangle count, and returns `INCOMPLETE`
+  for geometry it cannot decode. Tests compare it with the Python engine on the bundled samples. The sneaker is
+  now reported as an open surface proposed as furniture, as the Python engine does.
+
 ## Unreleased — Visual redesign and recording mode
 
 Specification: `specs/002-visual-redesign/`. Decisions: ADR-002 to ADR-006 (`Approved`). Presentation

@@ -76,7 +76,8 @@ Goal: show something visually striking in 2 s and tell the whole story in 20-30 
 
 ## 5. Findings and open points
 
-1. **REQ-VR-05 deferred.** 3d.naindev.com is static: verdicts come from `mockEvaluator.ts`, a heuristic that
+1. **REQ-VR-05 deferred** (update 2026-10-19: the in-browser evaluator now reads watertightness and degenerate
+   faces from the mesh, so a defect demo is possible on the static site; still no face positions from the API). 3d.naindev.com is static: verdicts come from `mockEvaluator.ts`, a heuristic that
    reports zero degenerate faces and derives watertightness from the triangle count. Only the Python engine can
    fail mesh-defect checks, and its API returns no face positions. A defect demo needs an owner decision
    (a real engine behind the demo, or a new API field, which is a contract change).
