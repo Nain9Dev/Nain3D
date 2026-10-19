@@ -4,15 +4,81 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nain3D Gateway</title>
+    <title>Nain3D · Caso de ingeniería de software | NainDev</title>
     <meta
       name="description"
-      content="Nain3D Gateway: la IA propone, el contrato dispone. Validación determinista de activos 3D."
+      content="Prototipo de arquitectura de NainDev: API FastAPI con contrato determinista donde la IA propone y el contrato dispone. Código, ADR y tests abiertos."
     />
     <meta name="theme-color" content="#0c1222" />
+    <meta name="author" content="Aitor Nain Mendoza Vallejo" />
+
+    <link rel="canonical" href="https://3d.naindev.com/" />
+    <link rel="alternate" hreflang="es" href="https://3d.naindev.com/" />
+    <link rel="alternate" hreflang="en" href="https://3d.naindev.com/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://3d.naindev.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nain3D · NainDev" />
+    <meta property="og:title" content="Nain3D · Caso de ingeniería de software | NainDev" />
+    <meta
+      property="og:description"
+      content="Prototipo de arquitectura de NainDev: API FastAPI con contrato determinista donde la IA propone y el contrato dispone. Código, ADR y tests abiertos."
+    />
+    <meta property="og:url" content="https://3d.naindev.com/" />
+    <meta property="og:image" content="https://3d.naindev.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale:alternate" content="en_GB" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Nain3D · Caso de ingeniería de software | NainDev" />
+    <meta name="twitter:image" content="https://3d.naindev.com/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Nain3D Gateway",
+        "url": "https://3d.naindev.com/",
+        "description": "Prototipo de arquitectura de NainDev: API FastAPI con contrato determinista donde la IA propone y el contrato dispone. Código, ADR y tests abiertos.",
+        "inLanguage": ["es", "en"],
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "sameAs": ["https://github.com/Nain9Dev/Nain3D"],
+        "author": {
+          "@type": "Person",
+          "name": "Aitor Nain Mendoza Vallejo",
+          "alternateName": "NainDev",
+          "url": "https://www.naindev.com/",
+          "sameAs": ["https://github.com/Nain9Dev", "https://www.linkedin.com/in/aitor-nain-mendoza-vallejo"]
+        }
+      }
+    </script>
+    <style>
+      /* Shown only until the app mounts, and to crawlers and visitors without JavaScript. */
+      body { margin: 0; background: #0c1222; color: #edf1f6; font-family: system-ui, sans-serif; }
+      .static-fallback { max-width: 44rem; margin: 0 auto; padding: 4rem 1.5rem; line-height: 1.5; }
+      .static-fallback a { color: #80ff00; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <main class="static-fallback">
+        <h1>Nain3D Gateway</h1>
+        <p>
+          Prototipo de arquitectura de NainDev. La IA propone la categoría de un modelo 3D y un contrato
+          determinista decide si cumple: presupuesto de triángulos, extensión física, estanqueidad y caras
+          degeneradas. API FastAPI, cliente Vue 3, decisiones de arquitectura y tests abiertos.
+        </p>
+        <p>
+          <a href="https://github.com/Nain9Dev/Nain3D">Código en GitHub</a> ·
+          <a href="https://www.naindev.com/">naindev.com</a> ·
+          <a href="mailto:contact@naindev.com">contact@naindev.com</a>
+        </p>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
