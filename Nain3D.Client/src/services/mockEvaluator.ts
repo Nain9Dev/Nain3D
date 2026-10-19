@@ -8,6 +8,7 @@ import type {
   SampleAsset,
   AiProposal,
 } from '../types/contracts';
+import { analyzeGlbMesh, type MeshAnalysis } from './glbMesh';
 
 export const PROFILES: Record<string, ProfileDefinition> = {
   Monitor: {
@@ -105,7 +106,7 @@ interface GltfRoot {
   meshes?: GltfMesh[];
 }
 
-function parseGlbFeatures(buffer: ArrayBuffer, fileName: string): GeometricFeatures {
+function parseGlbFeatures(buffer: ArrayBuffer, mesh: MeshAnalysis): GeometricFeatures {
   const view = new DataView(buffer);
   let triangleCount = 0;
   let vertexCount = 0;
@@ -171,18 +172,16 @@ function parseGlbFeatures(buffer: ArrayBuffer, fileName: string): GeometricFeatu
   const maxDim = Math.max(...extents);
   const volume = Math.round(dx * dy * dz * 1000000) / 1000000;
 
-  // Watertightness: true for industrial part or standard closed geometry
-  const isIndustrial = fileName.toLowerCase().includes('industrial');
-  const isWatertight = isIndustrial || triangleCount >= 12;
-
+  // Watertightness and degenerate faces are read from the triangle data (same rules as the Python engine);
+  // geometry that cannot be read counts as open, and the caller turns it into an INCOMPLETE verdict.
   return {
     triangle_count: triangleCount || 12,
     vertex_count: vertexCount || 8,
-    is_watertight: isWatertight,
+    is_watertight: mesh.watertight,
     extents,
     max_dimension_m: Math.round(maxDim * 10000) / 10000,
     volume_m3: volume,
-    degenerate_faces_count: 0,
+    degenerate_faces_count: mesh.degenerateFaces,
   };
 }
 
@@ -318,7 +317,8 @@ export async function evaluateFileStandalone(
   const startTime = performance.now();
   const buffer = await file.arrayBuffer();
   const sha256 = await calculateSha256(buffer);
-  const features = parseGlbFeatures(buffer, file.name);
+  const mesh = analyzeGlbMesh(buffer);
+  const features = parseGlbFeatures(buffer, mesh);
   const aiProposal = inferAiProposal(features, file.name);
 
   const profileKey =
@@ -329,7 +329,13 @@ export async function evaluateFileStandalone(
       : 'Mobiliario (Chair)';
 
   const profile = PROFILES[profileKey] || PROFILES['Mobiliario (Chair)'];
-  const { checks, verdict, summary } = evaluateConformance(features, profile);
+  const evaluated = evaluateConformance(features, profile);
+  const { checks } = evaluated;
+  // Fail-closed: an asset whose geometry could not be read is never approved.
+  const verdict: ConformanceVerdict = mesh.readable ? evaluated.verdict : 'INCOMPLETE';
+  const summary = mesh.readable
+    ? evaluated.summary
+    : 'Asset INCOMPLETE: the geometry could not be read, so it is rejected by default.';
   const durationMs = performance.now() - startTime;
 
   return {

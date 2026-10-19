@@ -27,12 +27,12 @@ Times are from the first rendered frame of the model.
 | 3.95 s | Green badge **Conforme** pops in, the card shadow turns green. |
 | 4.4-5.1 s | Latency counter *Evaluado en N ms* counts up, SHA-256 shown. |
 | **7.0 s (cut)** | The same sneaker, scaled to 5 m, replaces the first. Same model, wrong scale. |
-| 8.3-10.3 s | Checks tick again; the **Extensión física** row turns red (*5 m de 1,2 m* on the static site). From 8.95 s a red box shows the real size, a white box shows the profile limit, a ruler marks the metres and a red label reads *Excede el límite*. |
+| 8.3-10.3 s | Checks tick again; the **Extensión física** row turns red (*5 m de 3 m* on the static site). From 8.95 s a red box shows the real size, a white box shows the profile limit, a ruler marks the metres and a red label reads *Excede el límite*. |
 | 11.0 s | Red badge **No conforme**, red card shadow, *Incumple: Extensión física.* |
 | **15.0-20.0 s (end)** | Opaque dark closing card (5 s): the tagline, **Aitor Nain**, *Arquitecto de software full stack · NainDev*, *Hablemos*, and four lines: `naindev.com`, `contact@naindev.com`, LinkedIn `in/aitor-nain-mendoza-vallejo`, `github.com/Nain9Dev/Nain3D`. English version: *Full stack software architect*, *Let's talk*. Contacts come from `src/contact/contacts.ts`. |
 
 What the viewer ends with: the AI can be confident and still be vetoed; the contract has the last word.
-The limit shown (1,2 m) depends on the category the engine proposes; any category rejects a 5 m object.
+The limit shown (3 m) depends on the category the engine proposes; any category rejects a 5 m object.
 
 ## Steps to record
 

@@ -39,7 +39,9 @@ Python engine and the in-browser evaluator:
 - Two third-party GLBs (0.83 MB each) are committed under `public/samples/`. The owner's asset README forbids
   heavy 3D files in repositories; this is a deliberate, small exception limited to licensed demo assets.
 - Only CC0 and CC BY models are acceptable; the licence is verified at the source before a model is added.
-- The in-browser evaluator is a heuristic: it reports the sneaker as a watertight `Pieza Industrial`, while the
+- Update 2026-10-19: the evaluator now reads watertightness and degenerate faces from the triangle data and
+  agrees with the Python engine on these samples (the sneaker is an open surface proposed as furniture), so the
+  discrepancy below no longer applies. Original note: the in-browser evaluator was a heuristic: it reported the sneaker as a watertight `Pieza Industrial`, while the
   Python engine finds an open surface and proposes `Mobiliario (Chair)`. The verdict is the same (conformant,
   and non-conformant at 5 m), but the category and watertightness text differ between engines.
   Fixing that means changing the evaluator, which is out of scope for a presentation change.
