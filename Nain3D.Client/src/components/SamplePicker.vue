@@ -7,6 +7,8 @@ defineProps<{
   activeId: SampleId | null;
   busy: boolean;
   autoRotate: boolean;
+  /** True when files never leave the browser (public site); shows the privacy line. */
+  privacyNote: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -50,12 +52,13 @@ function onFile(event: Event): void {
       </button>
       <button type="button" class="tool" :disabled="busy" @click="emit('replay')">{{ t('actions.replay') }}</button>
       <button type="button" class="tool" @click="fileInput?.click()">{{ t('actions.upload') }}</button>
-      <input ref="fileInput" class="file" type="file" accept=".glb,.gltf,model/gltf-binary" tabindex="-1" aria-hidden="true" @change="onFile" />
+      <input ref="fileInput" class="file" type="file" accept=".glb,model/gltf-binary" tabindex="-1" aria-hidden="true" @change="onFile" />
       <label class="toggle">
         <input type="checkbox" :checked="autoRotate" @change="emit('update:autoRotate', ($event.target as HTMLInputElement).checked)" />
         <span>{{ t('actions.autoRotate') }}</span>
       </label>
     </div>
+    <p v-if="privacyNote" class="privacy">{{ t('upload.privacy') }}</p>
   </div>
 </template>
 
@@ -127,6 +130,11 @@ button:focus-visible,
 }
 .file {
   display: none;
+}
+.privacy {
+  flex-basis: 100%;
+  font: 500 0.78rem var(--nain-font-mono);
+  color: #b9c6da;
 }
 .toggle {
   display: inline-flex;

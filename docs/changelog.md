@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Evaluate your own model
+
+Specification: `specs/005-upload-own-model/`.
+
+- Visitors can choose or drop their own `.glb` (up to 25 MB) and get the verdict in the browser. Wrong type,
+  empty and oversized files are refused with a localised message; unreadable geometry gives `INCOMPLETE`.
+- On the public site no request is ever sent to an API (`shouldUseBackend`: local development hosts only), and
+  the page states that the file stays in the browser. `.gltf` with external files is no longer offered.
+
 ## Unreleased — Honest in-browser evaluator
 
 - The static site's evaluator now reads watertightness (every edge shared by two faces) and degenerate faces (area at

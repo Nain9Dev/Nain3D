@@ -9,6 +9,8 @@ import {
   evaluateFileStandalone,
 } from './mockEvaluator';
 
+import { shouldUseBackend } from './backend';
+
 const BASE_URL = '';
 
 export class ApiError extends Error {
@@ -31,6 +33,7 @@ function emitTelemetry(type: string, name: string, latencyMs: number, status: nu
 
 export const api = {
   async listProfiles(): Promise<ProfileDefinition[]> {
+    if (!shouldUseBackend()) return Object.values(PROFILES);
     try {
       const res = await fetch(`${BASE_URL}/api/v1/conformance/profiles`);
       if (res.ok) {
@@ -43,6 +46,7 @@ export const api = {
   },
 
   async listSamples(): Promise<SampleAsset[]> {
+    if (!shouldUseBackend()) return SAMPLES;
     try {
       const res = await fetch(`${BASE_URL}/api/v1/conformance/samples`);
       if (res.ok) {
@@ -64,23 +68,26 @@ export const api = {
   },
 
   async evaluateFile(file: File, overrideProfile?: string): Promise<EvaluationResult> {
-    try {
-      const formData = new FormData();
-      formData.append('file', file, file.name);
-      if (overrideProfile) {
-        formData.append('override_profile', overrideProfile);
-      }
+    // The visitor's file is only sent to the API in local development; elsewhere it never leaves the browser.
+    if (shouldUseBackend()) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        if (overrideProfile) {
+          formData.append('override_profile', overrideProfile);
+        }
 
-      const res = await fetch(`${BASE_URL}/api/v1/conformance/evaluate`, {
-        method: 'POST',
-        body: formData,
-      });
+        const res = await fetch(`${BASE_URL}/api/v1/conformance/evaluate`, {
+          method: 'POST',
+          body: formData,
+        });
 
-      if (res.ok) {
-        return await res.json();
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch {
+        // Backend not running; execute in-browser deterministic evaluation
       }
-    } catch {
-      // Backend not running; execute in-browser deterministic evaluation
     }
 
     const result = await evaluateFileStandalone(file, overrideProfile);
@@ -123,6 +130,7 @@ export const api = {
   },
 
   async checkHealth(): Promise<{ status: string; engine?: string }> {
+    if (!shouldUseBackend()) return { status: 'Healthy', engine: 'Deterministic WebAssembly/JS' };
     try {
       const res = await fetch(`${BASE_URL}/health/ready`);
       if (res.ok) {

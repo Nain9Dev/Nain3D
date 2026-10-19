@@ -95,6 +95,11 @@ export const en: Record<MessageKey, string> = {
   'actions.sampleSwitcher': 'Choose a sample model',
   'actions.shortcutHint': 'Shortcut: C',
 
+  'upload.empty': 'The file is empty.',
+  'upload.notGlb': 'Only .glb files (binary glTF) are accepted.',
+  'upload.tooLarge': 'The file is larger than {max} MB.',
+  'upload.privacy': 'Your file is evaluated in your browser and is not sent to any server.',
+  'stage.renderFailed': 'The model could not be shown in 3D.',
   'status.evaluating': 'Evaluating the model.',
   'status.error': 'The model could not be evaluated.',
   'status.errorDetail': 'Detail: {detail}',
