@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Hardening and project status
+
+- API: uploads are limited to `.glb` (415), 50 MB (413) and checked for the binary glTF header (422) before
+  parsing, as `SECURITY.md` already promised; unknown sample ids return 404 (the handler used a status constant
+  that does not exist, so a failure would have been an unhandled error). Tests in `tests/test_upload_limits.py`.
+- Client: Content-Security-Policy and referrer policy as meta tags; a Playwright test fails on any violation.
+- Dependabot for npm, pip and GitHub Actions; `SECURITY.md` rewritten to match what is enforced and tested.
+- `docs/project-status.md`: current state, paused items, how to resume, maintenance.
+
 ## Unreleased — Video export
 
 - `npm run record:video`: renders the recording sequence offline, frame by frame with the manual clock, into an

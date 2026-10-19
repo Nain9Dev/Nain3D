@@ -1,8 +1,12 @@
 // Accessibility, keyboard, language and motion checks (REQ-VR-08, -14, -16).
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 1920, height: 1080 } });
+
+const chair = readFileSync(fileURLToPath(new URL('../public/samples/sample-chair.glb', import.meta.url)));
 
 async function ready(page: Page): Promise<void> {
   await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true', { timeout: 30_000 });
@@ -71,6 +75,20 @@ test('language: ?lang wins, the choice is remembered without cookies', async ({ 
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.getByText('La IA propone, el contrato dispone.').first()).toBeVisible();
   expect(await context.cookies()).toEqual([]);
+});
+
+test('security: the page loads under its Content-Security-Policy without violations', async ({ page }) => {
+  const violations: string[] = [];
+  page.on('console', (message) => {
+    if (/content security policy/i.test(message.text())) violations.push(message.text());
+  });
+  await page.goto('/?clock=manual&sample=sample-shoe');
+  await ready(page);
+  await advance(page, 6000);
+  await page.locator('input[type="file"]').setInputFiles({ name: 'chair.glb', mimeType: 'model/gltf-binary', buffer: chair });
+  await ready(page);
+  await page.waitForTimeout(2000); // Give the NainDev ecosystem bar time to load its own resources.
+  expect(violations).toEqual([]);
 });
 
 test('footer: the four contacts are real, named links', async ({ page }) => {

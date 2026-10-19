@@ -36,6 +36,7 @@ rejects the asset, whatever the AI believes. The system is fail-closed.
 | Try it | [3d.naindev.com](https://3d.naindev.com) (Spanish by default, English with `?lang=en`). Press **C** to compare a conformant and a non-conformant model |
 | Watch the 20 s story | `https://3d.naindev.com/?mode=record` (fixed 9:16 or 16:9 layout, see [the recording script](docs/demo-recording-script.md)) |
 | Read the API | `http://localhost:8104/docs` after starting the backend |
+| Know the current state | [Project status](docs/project-status.md): what exists, what is paused, how to resume |
 | Understand the design | The [case study](docs/case-study.md): problem, rule, architecture, decisions, limits |
 | Check the engineering | [Specs](specs/), [decision records](docs/03-decisions/), [architecture](docs/01-architecture.md), [metrics](docs/visual-redesign-metrics.md) |
 | Run the tests | commands below |
