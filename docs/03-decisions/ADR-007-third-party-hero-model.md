@@ -1,8 +1,8 @@
 # ADR-007: Third-party hero model with a reproducible optimisation pipeline
 
-- Status: Proposed
+- Status: Approved (2026-10-19)
 - Date: 2026-10-18
-- Deciders: owner (approval pending); use of third-party models authorised in chat on 2026-10-18
+- Deciders: Aitor Nain Mendoza Vallejo (`NainDev`)
 
 ## Context
 
