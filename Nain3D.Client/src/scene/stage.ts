@@ -121,6 +121,7 @@ export class Stage {
   private overlay: ScaleOverlay | null = null;
   private bounds = new Box3();
   private frameRadius = 1;
+  private frameSize = new Vector3(1, 1, 1);
   private target = new Vector3();
   private autoRotate: boolean;
   private rafId = 0;
@@ -284,7 +285,7 @@ export class Stage {
   private placeCameraFromTime(): void {
     // Slow ease-in-out sweep: deterministic, readable on a phone, never a full spin.
     const seconds = this.timeMs / 1000;
-    const sweep = this.options.reducedMotion ? 0 : Math.sin(seconds * 0.45) * 0.9;
+    const sweep = this.options.reducedMotion ? 0 : Math.sin(seconds * 0.45) * 0.5;
     const azimuth = this.baseAzimuth + sweep;
     const elevation = 0.28;
     const distance = this.fitDistance();
@@ -297,10 +298,19 @@ export class Stage {
     this.camera.updateMatrixWorld();
   }
 
+  /**
+   * Distance that keeps the framed box on screen from any azimuth. Height is fitted against the vertical field of
+   * view and the horizontal diagonal against the horizontal one, so a long, low model (or a tall phone frame)
+   * is not shrunk by a bounding sphere.
+   */
   private fitDistance(): number {
     const vFov = (this.camera.fov * Math.PI) / 180;
     const hFov = 2 * Math.atan(Math.tan(vFov / 2) * this.camera.aspect);
-    return (this.frameRadius / Math.sin(Math.min(vFov, hFov) / 2)) * 1.05;
+    const halfHeight = this.frameSize.y / 2;
+    const halfDiagonal = Math.hypot(this.frameSize.x, this.frameSize.z) / 2;
+    // The near end of a deep object is closer to the lens than its centre, so add half the horizontal radius.
+    const distance = Math.max(halfHeight / Math.tan(vFov / 2), halfDiagonal / Math.tan(hFov / 2)) + halfDiagonal;
+    return distance * 1.1;
   }
 
   private resize(): void {
@@ -326,6 +336,7 @@ export class Stage {
     }
     this.target = box.getCenter(new Vector3());
     const size = box.getSize(new Vector3());
+    this.frameSize = size.clone();
     this.frameRadius = Math.max(0.2, size.length() / 2);
 
     const floorY = this.bounds.min.y;

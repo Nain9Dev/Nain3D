@@ -3,6 +3,7 @@ dist
 dist-ssr
 test-results
 playwright-report
+out
 *.local
 .vscode/*
 !.vscode/extensions.json

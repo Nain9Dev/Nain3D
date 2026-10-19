@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "generate:samples": "node tools/generate-samples.mjs",
     "measure": "node scripts/measure.mjs",
-    "optimize:models": "node tools/optimize-models.mjs"
+    "optimize:models": "node tools/optimize-models.mjs",
+    "record:video": "node scripts/render-video.mjs"
   },
   "dependencies": {
     "three": "^0.186.1",

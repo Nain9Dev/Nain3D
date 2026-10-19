@@ -24,7 +24,7 @@ export function buildScaleOverlay(evaluation: EvaluationResult): ScaleOverlay {
   const limit = evaluation.applied_profile.max_dimension_m;
   // The ruler is vertical, so it only needs to reach the taller of the model and the limit box.
   const span = Math.max(limit, extents[1]);
-  const tickStep = NICE_STEPS.find((step) => span / step <= 8) ?? NICE_STEPS[NICE_STEPS.length - 1];
+  const tickStep = NICE_STEPS.find((step) => span / step <= 5) ?? NICE_STEPS[NICE_STEPS.length - 1];
   const count = Math.max(1, Math.ceil(span / tickStep - 1e-9));
   const ticks = Array.from({ length: count }, (_, i) => Math.round((i + 1) * tickStep * 1000) / 1000);
   return { extents, limit, exceeds: !check || !check.passed, tickStep, ticks };

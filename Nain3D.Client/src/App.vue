@@ -8,7 +8,7 @@ import { shouldUseBackend } from './services/backend';
 import { MAX_UPLOAD_BYTES, validateUpload } from './upload/validateUpload';
 import { creditLine } from './samples/catalog';
 import { parseUrlState, type SampleId } from './state/urlState';
-import { RECORD_SEQUENCE, recordStateAt, revealStateAt } from './timeline';
+import { frameCount, RECORD_SEQUENCE, recordStateAt, revealStateAt } from './timeline';
 import { buildScaleOverlay } from './scene/overlay';
 import { useClock } from './composables/useClock';
 import { useReducedMotion } from './composables/useReducedMotion';
@@ -191,6 +191,7 @@ onMounted(async () => {
   (window as unknown as { __nain: unknown }).__nain = {
     advance: (ms: number) => clock.advance(ms),
     now: () => clock.now.value,
+    frameCount,
   };
   if (!isRecord) clock.start();
   const first: SampleId = urlState.sample ?? (urlState.sequence ? RECORD_SEQUENCE[0].sampleId : HERO_CONFORMANT);

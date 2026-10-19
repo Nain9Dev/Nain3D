@@ -59,7 +59,7 @@ for (const lang of ['es', 'en'] as const) {
         await shot(page, `record-${format}-${lang}-3-conformant`);
         await advance(page, 4000); // t = 10.4 s: second segment started
         await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
-        await advance(page, 5200);
+        await advance(page, 1600); // t = 12 s: second verdict visible, closing card (15 s) not yet shown
         await shot(page, `record-${format}-${lang}-4-non-conformant`);
         await advance(page, 4000);
         await shot(page, `record-${format}-${lang}-5-end-card`);

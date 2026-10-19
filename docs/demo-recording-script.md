@@ -45,6 +45,15 @@ The limit shown (3 m) depends on the category the engine proposes; any category 
 5. Repeat with `&lang=en` for the English take, or reuse the Spanish video and add English subtitles.
 6. Do not move the mouse over the page: the cursor is hidden and nothing depends on hover.
 
+## Export the video without screen recording
+
+`npm --prefix Nain3D.Client run record:video -- --format vertical --lang es` renders the 20 s sequence frame
+by frame with the manual clock and encodes it with ffmpeg (30 fps, H.264, `out/nain3d-vertical-es.mp4`, ignored
+by git). Options: `--format vertical|horizontal`, `--lang es|en`, `--fps`, `--seconds` (render only the first
+seconds), `--url` (default `http://localhost:5376`, so run `npm run build` and `npx vite preview --port 5376`
+first). The result is identical on every run and never drops frames; it takes about five minutes with software
+WebGL. The latency counter shows the evaluation time of that run.
+
 ## Safe zones (9:16)
 
 Key content stays inside 1080x1920 minus **230 px top** and **340 px bottom** (platform UI), with
