@@ -5,6 +5,9 @@ import type { MessageKey } from './es';
 export const en: Record<MessageKey, string> = {
   'app.name': 'Nain3D Gateway',
   'app.tagline': 'The AI proposes, the contract decides.',
+  'meta.title': 'Nain3D · Software engineering case study | NainDev',
+  'meta.description':
+    'NainDev architecture prototype: a FastAPI service with a deterministic contract where the AI proposes and the contract decides. Open code, ADRs and tests.',
   'app.skipToContent': 'Skip to content',
   'app.language': 'Language',
   'app.languageEs': 'Español',
@@ -97,10 +100,10 @@ export const en: Record<MessageKey, string> = {
   'status.errorDetail': 'Detail: {detail}',
 
   'footer.api': 'API documentation',
-  'footer.github': 'Source on GitHub',
-  'footer.site': 'naindev.com',
+  'footer.contact': 'Contact',
   'footer.stack': 'Deterministic engine · FastAPI · Pydantic v2 · Trimesh',
 
   'record.endCard': 'The AI proposes, the contract decides.',
-  'record.endUrl': '3d.naindev.com',
+  'cta.headline': 'Full stack software architect',
+  'cta.lead': "Let's talk",
 };

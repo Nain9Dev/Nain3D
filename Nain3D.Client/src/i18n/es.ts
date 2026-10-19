@@ -4,6 +4,9 @@
 export const es = {
   'app.name': 'Nain3D Gateway',
   'app.tagline': 'La IA propone, el contrato dispone.',
+  'meta.title': 'Nain3D · Caso de ingeniería de software | NainDev',
+  'meta.description':
+    'Prototipo de arquitectura de NainDev: API FastAPI con contrato determinista donde la IA propone y el contrato dispone. Código, ADR y tests abiertos.',
   'app.skipToContent': 'Saltar al contenido',
   'app.language': 'Idioma',
   'app.languageEs': 'Español',
@@ -96,12 +99,12 @@ export const es = {
   'status.errorDetail': 'Detalle: {detail}',
 
   'footer.api': 'Documentación de la API',
-  'footer.github': 'Código en GitHub',
-  'footer.site': 'naindev.com',
+  'footer.contact': 'Contacto',
   'footer.stack': 'Motor determinista · FastAPI · Pydantic v2 · Trimesh',
 
   'record.endCard': 'La IA propone, el contrato dispone.',
-  'record.endUrl': '3d.naindev.com',
+  'cta.headline': 'Arquitecto de software full stack',
+  'cta.lead': 'Hablemos',
 } as const;
 
 export type MessageKey = keyof typeof es;

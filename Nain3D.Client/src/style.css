@@ -336,18 +336,67 @@ select:focus-visible {
   gap: calc(24 * var(--u));
   padding: calc(96 * var(--u));
   text-align: center;
-  background: rgba(12, 18, 34, 0.985);
+  background: var(--page); /* Opaque: nothing of the stage may show through the closing card. */
   animation: endcard-in 0.5s ease both;
 }
+.is-record.portrait .endcard {
+  /* Same safe zones as the stage layout. */
+  padding: calc(230 * var(--u)) calc(96 * var(--u)) calc(340 * var(--u));
+}
 .endcard-line {
-  font: 800 calc(84 * var(--u)) var(--nain-font-sans);
-  line-height: 1.05;
+  font: 800 calc(56 * var(--u)) var(--nain-font-sans);
+  line-height: 1.1;
+  letter-spacing: var(--nain-track-h1);
+  color: var(--nain-paper);
+}
+.endcard-name {
+  margin-top: calc(24 * var(--u));
+  font: 800 calc(108 * var(--u)) var(--nain-font-sans);
+  line-height: 1;
   letter-spacing: var(--nain-track-h1);
 }
-.endcard-url {
-  font: 600 calc(44 * var(--u)) var(--nain-font-mono);
-  letter-spacing: var(--nain-track-label);
+.endcard-title {
+  font: 600 calc(40 * var(--u)) var(--nain-font-sans);
   color: var(--nain-green);
+}
+.endcard-lead {
+  margin-top: calc(16 * var(--u));
+  font: 600 calc(28 * var(--u)) var(--nain-font-mono);
+  letter-spacing: var(--nain-track-brand);
+  text-transform: uppercase;
+  color: #b9c6da;
+}
+.endcard-contacts {
+  list-style: none;
+  justify-self: center;
+  display: grid;
+  gap: calc(14 * var(--u));
+  text-align: left;
+}
+.endcard-contacts li {
+  display: grid;
+  grid-template-columns: calc(190 * var(--u)) auto;
+  align-items: baseline;
+  gap: calc(20 * var(--u));
+}
+.endcard-label {
+  font: 600 calc(26 * var(--u)) var(--nain-font-mono);
+  letter-spacing: var(--nain-track-label);
+  text-transform: uppercase;
+  color: var(--nain-green);
+}
+.endcard-value {
+  font: 500 calc(38 * var(--u)) var(--nain-font-mono);
+  color: var(--nain-paper);
+}
+.is-record.portrait .endcard-line {
+  font-size: calc(50 * var(--u));
+}
+.is-record.portrait .endcard-name {
+  font-size: calc(96 * var(--u));
+}
+.is-record.portrait .endcard-value {
+  font-size: calc(32 * var(--u));
 }
 @keyframes endcard-in {
   from {

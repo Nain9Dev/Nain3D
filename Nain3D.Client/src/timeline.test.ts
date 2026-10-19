@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RECORD_SEQUENCE, RECORD_TOTAL_MS, recordStateAt, revealDuration, revealStateAt } from './timeline';
+import { RECORD_END_CARD_AT, RECORD_SEQUENCE, RECORD_TOTAL_MS, recordStateAt, revealDuration, revealStateAt } from './timeline';
 
 describe('revealStateAt', () => {
   it('starts empty', () => {
@@ -48,6 +48,15 @@ describe('recordStateAt', () => {
     const second = recordStateAt(RECORD_SEQUENCE[1].startMs + 100);
     expect(second).toMatchObject({ index: 1, localMs: 100, endCard: false });
     expect(recordStateAt(RECORD_TOTAL_MS - 1).endCard).toBe(true);
+  });
+
+  it('keeps the closing card on screen for at least five seconds', () => {
+    expect(RECORD_TOTAL_MS - RECORD_END_CARD_AT).toBeGreaterThanOrEqual(5000);
+  });
+
+  it('lets the second verdict settle before the closing card', () => {
+    const verdictDone = RECORD_SEQUENCE[1].startMs + revealDuration(4);
+    expect(RECORD_END_CARD_AT).toBeGreaterThanOrEqual(verdictDone);
   });
 
   it('stays under thirty seconds', () => {

@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import { api, ApiError } from './services/api';
 import type { EvaluationResult, ProfileDefinition } from './types/contracts';
 import { lang, t, type MessageKey } from './i18n';
+import { CONTACTS, IDENTITY } from './contact/contacts';
 import { creditLine } from './samples/catalog';
 import { parseUrlState, type SampleId } from './state/urlState';
 import { RECORD_SEQUENCE, recordStateAt, revealStateAt } from './timeline';
@@ -164,7 +165,8 @@ watch(
 watch(
   lang,
   () => {
-    document.title = `${t('app.name')} · ${t('app.tagline')}`;
+    document.title = t('meta.title');
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.description'));
   },
   { immediate: true },
 );
@@ -263,16 +265,29 @@ onBeforeUnmount(() => {
 
     <footer v-if="!isRecord" class="footbar">
       <span>{{ t('footer.stack') }}</span>
-      <nav>
+      <nav :aria-label="t('footer.contact')">
         <a v-if="showDocsLink" href="http://localhost:8104/docs" target="_blank" rel="noopener noreferrer">{{ t('footer.api') }}</a>
-        <a href="https://github.com/Nain9Dev/3d-ai-conformance-demo" target="_blank" rel="noopener noreferrer">{{ t('footer.github') }}</a>
-        <a href="https://naindev.com" target="_blank" rel="noopener noreferrer">{{ t('footer.site') }}</a>
+        <a
+          v-for="contact in CONTACTS"
+          :key="contact.id"
+          :href="contact.href"
+          :target="contact.id === 'email' ? undefined : '_blank'"
+          rel="noopener noreferrer"
+        >{{ contact.id === 'email' ? contact.value : contact.label }}</a>
       </nav>
     </footer>
 
     <div v-if="isRecord && recordState.endCard" class="endcard">
       <p class="endcard-line">{{ t('record.endCard') }}</p>
-      <p class="endcard-url">{{ t('record.endUrl') }}</p>
+      <p class="endcard-name">{{ IDENTITY.name }}</p>
+      <p class="endcard-title">{{ t('cta.headline') }} · {{ IDENTITY.brand }}</p>
+      <p class="endcard-lead">{{ t('cta.lead') }}</p>
+      <ul class="endcard-contacts">
+        <li v-for="contact in CONTACTS" :key="contact.id">
+          <span class="endcard-label">{{ contact.label }}</span>
+          <span class="endcard-value">{{ contact.value }}</span>
+        </li>
+      </ul>
     </div>
   </div>
 </template>

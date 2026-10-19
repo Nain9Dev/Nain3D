@@ -59,7 +59,7 @@ export const RECORD_SEQUENCE: readonly RecordSegment[] = [
   { sampleId: 'sample-shoe', startMs: 0 },
   { sampleId: 'sample-oversized-shoe', startMs: 7000 },
 ];
-export const RECORD_END_CARD_AT = 16500;
+export const RECORD_END_CARD_AT = 15000;
 export const RECORD_TOTAL_MS = 20000;
 
 export interface RecordState {
