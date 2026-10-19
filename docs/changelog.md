@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Case study
+
+- `docs/case-study.md`: the problem, the fail-closed rule, architecture, decisions with their ADRs, evidence and
+  honest limits. Linked from the README and from the page footer (*Caso de estudio* / *Case study*); a test
+  checks that every relative link resolves.
+
 ## Unreleased — Evaluate your own model
 
 Specification: `specs/005-upload-own-model/`.

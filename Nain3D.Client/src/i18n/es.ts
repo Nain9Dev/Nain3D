@@ -105,6 +105,7 @@ export const es = {
 
   'footer.api': 'Documentación de la API',
   'footer.contact': 'Contacto',
+  'footer.caseStudy': 'Caso de estudio',
   'footer.stack': 'Motor determinista · FastAPI · Pydantic v2 · Trimesh',
 
   'record.endCard': 'La IA propone, el contrato dispone.',

@@ -106,6 +106,7 @@ export const en: Record<MessageKey, string> = {
 
   'footer.api': 'API documentation',
   'footer.contact': 'Contact',
+  'footer.caseStudy': 'Case study',
   'footer.stack': 'Deterministic engine · FastAPI · Pydantic v2 · Trimesh',
 
   'record.endCard': 'The AI proposes, the contract decides.',
