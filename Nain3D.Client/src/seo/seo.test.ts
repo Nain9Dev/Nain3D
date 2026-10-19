@@ -119,6 +119,26 @@ describe('crawler files', () => {
   });
 });
 
+describe('case study', () => {
+  const caseStudy = readFileSync(repo('docs/case-study.md'), 'utf8');
+
+  it('only links to files that exist', () => {
+    const links = [...caseStudy.matchAll(/\]\((?!https?:|#)([^)#]+)(?:#[^)]*)?\)/g)].map((m) => m[1]);
+    expect(links.length).toBeGreaterThan(8);
+    for (const link of links) expect(existsSync(repo(`docs/${link}`)), link).toBe(true);
+  });
+
+  it('is linked from the README and from the page footer', () => {
+    expect(readFileSync(repo('README.md'), 'utf8')).toContain('docs/case-study.md');
+    expect(readFileSync(client('src/App.vue'), 'utf8')).toContain('blob/main/docs/case-study.md');
+  });
+
+  it('has the footer label in both languages', () => {
+    expect(es['footer.caseStudy']).toBe('Caso de estudio');
+    expect(en['footer.caseStudy']).toBe('Case study');
+  });
+});
+
 describe('repository presentation', () => {
   const readme = readFileSync(repo('README.md'), 'utf8');
 

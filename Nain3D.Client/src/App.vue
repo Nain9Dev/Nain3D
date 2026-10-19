@@ -282,6 +282,7 @@ onBeforeUnmount(() => {
       <span>{{ t('footer.stack') }}</span>
       <nav :aria-label="t('footer.contact')">
         <a v-if="showDocsLink" href="http://localhost:8104/docs" target="_blank" rel="noopener noreferrer">{{ t('footer.api') }}</a>
+        <a href="https://github.com/Nain9Dev/Nain3D/blob/main/docs/case-study.md" target="_blank" rel="noopener noreferrer">{{ t('footer.caseStudy') }}</a>
         <a
           v-for="contact in CONTACTS"
           :key="contact.id"
