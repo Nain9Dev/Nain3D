@@ -4,6 +4,8 @@ import { api, ApiError } from './services/api';
 import type { EvaluationResult, ProfileDefinition } from './types/contracts';
 import { lang, t, type MessageKey } from './i18n';
 import { CONTACTS, IDENTITY } from './contact/contacts';
+import { shouldUseBackend } from './services/backend';
+import { MAX_UPLOAD_BYTES, validateUpload } from './upload/validateUpload';
 import { creditLine } from './samples/catalog';
 import { parseUrlState, type SampleId } from './state/urlState';
 import { RECORD_SEQUENCE, recordStateAt, revealStateAt } from './timeline';
@@ -68,7 +70,8 @@ function measureFormat(): void {
 }
 measureFormat();
 const formatClass = computed(() => (isRecord ? (portrait.value ? 'portrait' : 'landscape') : ''));
-const showDocsLink = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const showDocsLink = shouldUseBackend();
+const keepsFilesInBrowser = !shouldUseBackend();
 
 function currentOrigin(): number {
   return urlState.sequence ? RECORD_SEQUENCE[recordState.value.index].startMs : clock.now.value;
@@ -100,7 +103,13 @@ async function loadSample(id: SampleId): Promise<void> {
 }
 
 async function handleUpload(file: File): Promise<void> {
+  const problem = validateUpload(file);
+  if (problem) {
+    errorMessage.value = t(`upload.${problem}` as MessageKey, { max: MAX_UPLOAD_BYTES / (1024 * 1024) });
+    return;
+  }
   isEvaluating.value = true;
+  ready.value = false;
   errorMessage.value = null;
   uploadedFile = file;
   activeSampleId.value = null;
@@ -142,6 +151,10 @@ function onSettled(buffer: ArrayBuffer): void {
     firstSettle = false;
     clock.start();
   }
+}
+
+function onRenderFailed(): void {
+  errorMessage.value = t('stage.renderFailed');
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -226,6 +239,7 @@ onBeforeUnmount(() => {
             :loading="isEvaluating && !modelBuffer"
             @file-selected="handleUpload"
             @settled="onSettled"
+            @failed="onRenderFailed"
           />
           <div v-if="isRecord" class="hook" :class="{ faded: cameraTimeMs > HOOK_MS || (urlState.sequence && recordState.index > 0) }" aria-hidden="true">
             <p class="hook-name">{{ t('app.name') }}</p>
@@ -239,6 +253,7 @@ onBeforeUnmount(() => {
           v-model:auto-rotate="autoRotate"
           :active-id="activeSampleId"
           :busy="isEvaluating"
+          :privacy-note="keepsFilesInBrowser"
           @select="loadSample"
           @compare="toggleCompare"
           @replay="replay"

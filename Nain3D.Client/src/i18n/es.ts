@@ -94,6 +94,11 @@ export const es = {
   'actions.sampleSwitcher': 'Elegir modelo de ejemplo',
   'actions.shortcutHint': 'Atajo: C',
 
+  'upload.empty': 'El archivo está vacío.',
+  'upload.notGlb': 'Solo se admiten archivos .glb (glTF binario).',
+  'upload.tooLarge': 'El archivo supera los {max} MB.',
+  'upload.privacy': 'Tu archivo se evalúa en tu navegador y no se envía a ningún servidor.',
+  'stage.renderFailed': 'No se ha podido mostrar el modelo en 3D.',
   'status.evaluating': 'Evaluando el modelo.',
   'status.error': 'No se ha podido evaluar el modelo.',
   'status.errorDetail': 'Detalle: {detail}',

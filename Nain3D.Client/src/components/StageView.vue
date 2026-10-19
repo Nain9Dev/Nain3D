@@ -21,6 +21,8 @@ const emit = defineEmits<{
   (e: 'fileSelected', file: File): void;
   /** The model and overlay are in the scene and a frame has been drawn. */
   (e: 'settled', buffer: ArrayBuffer): void;
+  /** The model could not be parsed or drawn. */
+  (e: 'failed'): void;
 }>();
 
 const root = ref<HTMLDivElement | null>(null);
@@ -47,6 +49,7 @@ function sync(): void {
     .catch((error: unknown) => {
       // A model that cannot be parsed must not block later loads.
       console.error('Stage update failed', error);
+      emit('failed');
     });
 }
 let loadedBuffer: ArrayBuffer | null = null;
@@ -117,7 +120,8 @@ function onDrop(event: DragEvent): void {
   event.preventDefault();
   isDragging.value = false;
   const file = event.dataTransfer?.files?.[0];
-  if (file && /\.(glb|gltf)$/i.test(file.name)) emit('fileSelected', file);
+  // Validation (type and size) and its messages live in the app; every dropped file is handed over.
+  if (file) emit('fileSelected', file);
 }
 
 function onKey(event: KeyboardEvent): void {
