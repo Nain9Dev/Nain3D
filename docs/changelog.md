@@ -29,6 +29,11 @@ and sample models only: business rules, API contracts and schemas are unchanged.
   (`naindev.com`, `contact@naindev.com`, LinkedIn, GitHub) in Spanish and English, kept for 5 s inside the 9:16
   safe zones; the page footer lists the same contacts as named links. Contact data in `src/contact/contacts.ts`.
 
+- Search presence and presentation (spec 004): engineering-case title and description (kept clear of the
+  Contrast3D x NainDev commercial keywords), canonical, hreflang, Open Graph and Twitter tags with a 1200x630 image,
+  JSON-LD `WebApplication` authored by the owner, static no-JavaScript content, `robots.txt`, `sitemap.xml`,
+  language-aware title and description. README rewritten in English and corrected; `THIRD_PARTY_NOTICES.md`.
+
 ### Changed
 
 - Client renderer: `<model-viewer>` replaced by a lazily loaded three.js stage (ADR-002).

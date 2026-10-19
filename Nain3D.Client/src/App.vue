@@ -165,7 +165,8 @@ watch(
 watch(
   lang,
   () => {
-    document.title = `${t('app.name')} · ${t('app.tagline')}`;
+    document.title = t('meta.title');
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.description'));
   },
   { immediate: true },
 );

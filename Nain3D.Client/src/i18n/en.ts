@@ -5,6 +5,9 @@ import type { MessageKey } from './es';
 export const en: Record<MessageKey, string> = {
   'app.name': 'Nain3D Gateway',
   'app.tagline': 'The AI proposes, the contract decides.',
+  'meta.title': 'Nain3D · Software engineering case study | NainDev',
+  'meta.description':
+    'NainDev architecture prototype: a FastAPI service with a deterministic contract where the AI proposes and the contract decides. Open code, ADRs and tests.',
   'app.skipToContent': 'Skip to content',
   'app.language': 'Language',
   'app.languageEs': 'Español',

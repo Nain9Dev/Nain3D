@@ -4,6 +4,9 @@
 export const es = {
   'app.name': 'Nain3D Gateway',
   'app.tagline': 'La IA propone, el contrato dispone.',
+  'meta.title': 'Nain3D · Caso de ingeniería de software | NainDev',
+  'meta.description':
+    'Prototipo de arquitectura de NainDev: API FastAPI con contrato determinista donde la IA propone y el contrato dispone. Código, ADR y tests abiertos.',
   'app.skipToContent': 'Saltar al contenido',
   'app.language': 'Idioma',
   'app.languageEs': 'Español',
