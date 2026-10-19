@@ -62,6 +62,11 @@ export const RECORD_SEQUENCE: readonly RecordSegment[] = [
 export const RECORD_END_CARD_AT = 15000;
 export const RECORD_TOTAL_MS = 20000;
 
+/** Frames needed to render `durationMs` of the recording at `fps` (offline video export). */
+export function frameCount(fps: number, durationMs: number = RECORD_TOTAL_MS): number {
+  return Math.ceil((durationMs / 1000) * fps);
+}
+
 export interface RecordState {
   index: number;
   localMs: number;

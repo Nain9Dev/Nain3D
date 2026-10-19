@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RECORD_END_CARD_AT, RECORD_SEQUENCE, RECORD_TOTAL_MS, recordStateAt, revealDuration, revealStateAt } from './timeline';
+import { frameCount, RECORD_END_CARD_AT, RECORD_SEQUENCE, RECORD_TOTAL_MS, recordStateAt, revealDuration, revealStateAt } from './timeline';
 
 describe('revealStateAt', () => {
   it('starts empty', () => {
@@ -38,6 +38,18 @@ describe('revealStateAt', () => {
       latencyProgress: 1,
       done: true,
     });
+  });
+});
+
+describe('frameCount', () => {
+  it('gives one frame per tick for the whole recording', () => {
+    expect(frameCount(30)).toBe(600);
+    expect(frameCount(24)).toBe(480);
+    expect(frameCount(30, 1000)).toBe(30);
+  });
+
+  it('rounds up so the last moment is always rendered', () => {
+    expect(frameCount(30, 1010)).toBe(31);
   });
 });
 

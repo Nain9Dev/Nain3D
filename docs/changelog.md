@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — Video export
+
+- `npm run record:video`: renders the recording sequence offline, frame by frame with the manual clock, into an
+  MP4 (vertical or horizontal, Spanish or English, any frame rate). Deterministic and free of dropped frames.
+
 ## Unreleased — Case study
 
 - `docs/case-study.md`: the problem, the fail-closed rule, architecture, decisions with their ADRs, evidence and
