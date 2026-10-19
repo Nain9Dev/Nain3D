@@ -42,6 +42,8 @@ test('a corrupt .glb is never approved', async ({ page }) => {
   await open(page);
   await page.locator('input[type="file"]').setInputFiles({ name: 'broken.glb', mimeType: 'model/gltf-binary', buffer: Buffer.from('this is not a glb file at all') });
   await expect(page.getByRole('alert')).toContainText('No se ha podido mostrar el modelo', { timeout: 30_000 });
+  // The verdict reveal starts when the evaluation lands; wait for it before moving the manual clock (slow CI).
+  await expect(page.locator('.check').first()).toBeVisible({ timeout: 30_000 });
   await advance(page, 6000);
   await expect(page.locator('.verdict.visible .badge')).toContainText('Incompleto');
   await expect(page.locator('.tone-bad')).toBeVisible();
