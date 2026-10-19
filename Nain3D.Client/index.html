@@ -9,6 +9,13 @@
       name="description"
       content="Prototipo de arquitectura de NainDev: API FastAPI con contrato determinista donde la IA propone y el contrato dispone. Código, ADR y tests abiertos."
     />
+    <!-- GitHub Pages cannot send headers, so the policy ships as a meta tag. Inline styles stay allowed for Vue's
+         style bindings; scripts are limited to this site and the NainDev ecosystem bar. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://www.naindev.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: https://www.naindev.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="theme-color" content="#0c1222" />
     <meta name="author" content="Aitor Nain Mendoza Vallejo" />
 

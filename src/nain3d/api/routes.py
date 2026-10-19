@@ -25,6 +25,12 @@ KNOWN_SAMPLE_IDS = frozenset(
     }
 )
 
+# Plain codes: Starlette renamed these constants (413/422) between versions, which raises deprecation warnings.
+HTTP_413_TOO_LARGE = 413
+HTTP_422_UNPROCESSABLE = 422
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+GLB_MAGIC = b"glTF"
+
 # Cache for generated synthetic benchmark samples
 _SYNTHETIC_SAMPLES_CACHE: Dict[str, bytes] = {}
 
@@ -121,14 +127,16 @@ async def list_samples():
 @router.get("/samples/{sample_id}/download")
 async def download_sample(sample_id: str):
     """Downloads or streams the synthetic 3D GLB model for in-browser 3D rendering."""
+    if sample_id not in KNOWN_SAMPLE_IDS:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown sample '{sample_id}'.")
     try:
         data = _get_or_create_sample_glb(sample_id)
-        return Response(content=data, media_type="model/gltf-binary")
-    except Exception as e:
+    except Exception as e:  # Generation failure is a server problem, not a missing resource.
         raise HTTPException(
-            status_code=status.Status404NotFound,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Sample '{sample_id}' could not be generated: {e}",
         )
+    return Response(content=data, media_type="model/gltf-binary")
 
 
 @router.post("/evaluate", response_model=EvaluationResult)
@@ -142,12 +150,29 @@ async def evaluate_asset(
     and returns a fail-closed verdict.
     """
     start_time = time.perf_counter()
-    file_bytes = await file.read()
+
+    # Safeguards, checked before any parsing: .glb only, bounded size, binary glTF header.
+    if not (file.filename or "").lower().endswith(".glb"):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Only binary glTF (.glb) files are accepted.",
+        )
+    file_bytes = await file.read(MAX_UPLOAD_BYTES + 1)  # One extra byte proves the limit was exceeded.
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=HTTP_413_TOO_LARGE,
+            detail=f"The uploaded file exceeds the {MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit.",
+        )
 
     if not file_bytes:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The uploaded 3D file is empty.",
+        )
+    if file_bytes[:4] != GLB_MAGIC:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE,
+            detail="Invalid binary glTF header: the file does not start with the 'glTF' magic bytes.",
         )
 
     # Compute immutable SHA-256
@@ -157,7 +182,7 @@ async def evaluate_asset(
         mesh = load_mesh_from_bytes(file_bytes, file.filename or "model.glb")
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE,
             detail=f"Unable to parse 3D asset as valid glTF/GLB binary: {e}",
         )
 
