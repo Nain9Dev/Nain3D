@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { api, ApiError } from './services/api';
 import type { EvaluationResult, ProfileDefinition } from './types/contracts';
-import { lang, t, type MessageKey } from './i18n';
+import { lang, numberFormat, t, type MessageKey } from './i18n';
 import { CONTACTS, IDENTITY } from './contact/contacts';
 import { shouldUseBackend } from './services/backend';
 import { MAX_UPLOAD_BYTES, validateUpload } from './upload/validateUpload';
@@ -15,6 +15,10 @@ import { useReducedMotion } from './composables/useReducedMotion';
 import AiProposalPanel from './components/AiProposalPanel.vue';
 import ContractPanel from './components/ContractPanel.vue';
 import ProfileDialog from './components/ProfileDialog.vue';
+import ReportDialog from './components/ReportDialog.vue';
+import { composeReport } from './report/reportContent';
+import { renderReport, reportFileName } from './report/renderReport';
+import { shareOrDownload } from './report/share';
 import { useProfiles } from './composables/useProfiles';
 import LanguageSwitch from './components/LanguageSwitch.vue';
 import SamplePicker from './components/SamplePicker.vue';
@@ -44,6 +48,45 @@ const errorMessage = ref<string | null>(null);
 const autoRotate = ref(true);
 const revealOrigin = ref(0);
 const ready = ref(false);
+
+// One-page PDF report (spec 006): built in the browser, shared with the system share sheet or downloaded.
+const stageRef = ref<InstanceType<typeof StageView> | null>(null);
+const reportOpen = ref(false);
+const reportBusy = ref(false);
+const reportOutcome = ref<'ok' | 'error' | null>(null);
+const REPORT_KEY = 'nain3d.report';
+function readReportFields(): { company: string; reference: string } {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(REPORT_KEY) ?? '{}') as Record<string, unknown>;
+    return { company: String(stored.company ?? '').slice(0, 80), reference: '' };
+  } catch {
+    return { company: '', reference: '' };
+  }
+}
+const reportFields = ref(readReportFields());
+
+async function createReport(fields: { company: string; reference: string }): Promise<void> {
+  if (!evaluation.value) return;
+  reportBusy.value = true;
+  reportOutcome.value = null;
+  try {
+    const content = composeReport(evaluation.value, t, (n) => numberFormat.value.format(n), fields);
+    const picture = stageRef.value?.capture() ?? undefined;
+    const bytes = renderReport(content, picture).build();
+    const result = await shareOrDownload(bytes, reportFileName(evaluation.value, t), content.title);
+    reportOutcome.value = result === 'cancelled' ? null : 'ok';
+    try {
+      window.localStorage.setItem(REPORT_KEY, JSON.stringify({ company: fields.company.trim() })); // The reference is per order.
+    } catch {
+      // Not remembering the company is acceptable.
+    }
+    reportFields.value = { company: fields.company, reference: '' };
+  } catch {
+    reportOutcome.value = 'error';
+  } finally {
+    reportBusy.value = false;
+  }
+}
 let uploadedFile: File | null = null;
 let firstSettle = true;
 
@@ -248,6 +291,7 @@ onBeforeUnmount(() => {
       <section class="stage-col" :aria-label="t('stage.label')">
         <div class="stage-frame">
           <StageView
+            ref="stageRef"
             :model-buffer="modelBuffer"
             :overlay="overlay"
             :overlay-visible="overlayVisible"
@@ -292,9 +336,21 @@ onBeforeUnmount(() => {
           :reveal="reveal"
           :show-profile-picker="!isRecord"
           @open-profiles="profilesOpen = true"
+          @open-report="reportOutcome = null; reportOpen = true"
         />
       </section>
     </main>
+
+    <ReportDialog
+      v-if="!isRecord"
+      :open="reportOpen"
+      :busy="reportBusy"
+      :outcome="reportOutcome"
+      :company="reportFields.company"
+      :reference="reportFields.reference"
+      @close="reportOpen = false"
+      @create="createReport"
+    />
 
     <ProfileDialog
       v-if="!isRecord"

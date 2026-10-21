@@ -78,6 +78,23 @@ export function buildCheckRows(
   });
 }
 
+export type VerdictTone = 'good' | 'warn' | 'bad';
+
+export function verdictTone(evaluation: EvaluationResult): VerdictTone {
+  if (evaluation.verdict === 'CONFORMANT') return 'good';
+  if (evaluation.verdict === 'CONFORMANT_WITH_FINDINGS') return 'warn';
+  return 'bad';
+}
+
+/** One sentence saying why: which blocking checks fail, or the standard line for the verdict. */
+export function verdictReason(evaluation: EvaluationResult, t: Translate): string {
+  if (evaluation.verdict === 'NON_CONFORMANT') {
+    const failed = failedCheckNames(evaluation, t);
+    if (failed.length > 0) return t('verdict.failedChecks', { checks: failed.join(', ') });
+  }
+  return t(`verdict.sub${evaluation.verdict}` as MessageKey);
+}
+
 export function failedCheckNames(evaluation: EvaluationResult, t: Translate): string[] {
   const rows = buildCheckRows(evaluation, t, String);
   return rows.filter((row) => !row.passed && row.severity === 'blocking').map((row) => row.label);

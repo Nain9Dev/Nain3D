@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { numberFormat, t, type MessageKey } from '../i18n';
 import type { RevealState } from '../timeline';
 import type { EvaluationResult } from '../types/contracts';
-import { buildCheckRows, failedCheckNames } from '../viewModel';
+import { buildCheckRows, verdictReason } from '../viewModel';
 
 const props = defineProps<{
   evaluation: EvaluationResult | null;
@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'openProfiles'): void;
+  (e: 'openReport'): void;
 }>();
 
 /** Built-in profiles are translated; a user's profile shows its own name. */
@@ -34,14 +35,7 @@ const tone = computed(() => {
   return 'bad';
 });
 const verdictLabel = computed(() => (verdict.value ? t(`verdict.${verdict.value}` as MessageKey) : ''));
-const verdictSub = computed(() => {
-  if (!props.evaluation || !verdict.value) return '';
-  if (verdict.value === 'NON_CONFORMANT') {
-    const failed = failedCheckNames(props.evaluation, t);
-    if (failed.length > 0) return t('verdict.failedChecks', { checks: failed.join(', ') });
-  }
-  return t(`verdict.sub${verdict.value}` as MessageKey);
-});
+const verdictSub = computed(() => (props.evaluation ? verdictReason(props.evaluation, t) : ''));
 
 const oneDecimal = computed(
   () => new Intl.NumberFormat(numberFormat.value.resolvedOptions().locale, { maximumFractionDigits: 1 }),
@@ -107,6 +101,10 @@ function rowStatusText(index: number, passed: boolean, severity: string): string
         <span class="latency">{{ t('contract.latency', { ms: latency }) }}</span>
         <span class="hash"><span class="label">{{ t('contract.hash') }}</span> {{ evaluation.asset_sha256.slice(0, 16) }}</span>
       </p>
+
+      <button v-if="showProfilePicker && reveal.verdictVisible" type="button" class="report-btn" @click="emit('openReport')">
+        {{ t('report.open') }}
+      </button>
     </template>
   </section>
 </template>
@@ -166,6 +164,21 @@ h2 {
   font: 700 0.85rem var(--nain-font-sans);
   color: var(--nain-brand-black);
   cursor: pointer;
+}
+.report-btn {
+  margin-top: var(--gap);
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border: 2px solid var(--nain-brand-black);
+  border-radius: var(--nain-radius);
+  background: var(--nain-green);
+  font: 800 0.95rem var(--nain-font-sans);
+  color: var(--nain-brand-black);
+  cursor: pointer;
+}
+.report-btn:focus-visible {
+  outline: 3px solid var(--nain-blue);
+  outline-offset: 2px;
 }
 .profile-name {
   overflow: hidden;

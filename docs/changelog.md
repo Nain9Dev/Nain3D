@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — PDF report and share (spec 006, PR 3)
+
+- A one-page A4 report is built in the browser (hand-written PDF writer, no dependencies): verdict and the limit that
+  fails and by how much, profile, file name and size, SHA-256, UTC date, a capture of the model and the check table.
+  Optional company and reference fields; the company is remembered on the device. It is shared through the system
+  share sheet when the device supports files, otherwise downloaded. Spanish or English, following the interface.
+
 ## Unreleased — Store profiles (spec 006, PR 2)
 
 - Users create, edit, duplicate and delete their own check profiles (up to 20) and pick one, or "automatic", for every
