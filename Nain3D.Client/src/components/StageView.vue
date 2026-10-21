@@ -93,6 +93,9 @@ onMounted(async () => {
   sync();
 });
 
+/** A JPEG of the current view for reports (null before a model is on screen). */
+defineExpose({ capture: () => stage?.capture() ?? null });
+
 onBeforeUnmount(() => {
   unwire();
   stage?.dispose();

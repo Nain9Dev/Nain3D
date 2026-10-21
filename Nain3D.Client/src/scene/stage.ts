@@ -226,6 +226,29 @@ export class Stage {
     this.renderFrame();
   }
 
+  /** A JPEG of the current view on the brand background, for the PDF report. Null when nothing can be drawn. */
+  capture(): { data: Uint8Array; width: number; height: number } | null {
+    if (!this.model) return null;
+    this.renderFrame(); // The WebGL buffer is only readable in the same task as the draw call.
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    const flat = document.createElement('canvas');
+    flat.width = width;
+    flat.height = height;
+    const ctx = flat.getContext('2d');
+    if (!ctx) return null;
+    const gradient = ctx.createRadialGradient(width / 2, height * 0.38, 0, width / 2, height * 0.38, Math.max(width, height) * 0.7);
+    gradient.addColorStop(0, '#0b4aa6');
+    gradient.addColorStop(0.46, '#002b66');
+    gradient.addColorStop(1, '#0b1426');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(this.canvas, 0, 0);
+    const url = flat.toDataURL('image/jpeg', 0.86);
+    const raw = atob(url.slice(url.indexOf(',') + 1));
+    return { data: Uint8Array.from(raw, (c) => c.charCodeAt(0)), width, height };
+  }
+
   setAutoRotate(value: boolean): void {
     this.autoRotate = value && !this.options.reducedMotion;
   }
