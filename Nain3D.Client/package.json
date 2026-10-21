@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "generate:icons": "node tools/generate-icons.mjs",
     "generate:samples": "node tools/generate-samples.mjs",
     "measure": "node scripts/measure.mjs",
     "optimize:models": "node tools/optimize-models.mjs",
