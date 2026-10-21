@@ -1,7 +1,7 @@
 fastapi>=0.115.0
 pydantic>=2.10.0
 uvicorn>=0.30.0
-python-multipart>=0.0.12
+python-multipart>=0.0.32
 trimesh>=4.0.0
 numpy>=1.26.0
 scikit-learn>=1.4.0
