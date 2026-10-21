@@ -17,6 +17,7 @@ memory), please report it responsibly:
 | Uploads in the API (local development) | Only `.glb` (415), at most 50 MB (413), binary glTF header checked before parsing (422), reads at most the limit plus one byte | `src/nain3d/api/routes.py`, `tests/test_upload_limits.py` |
 | Sample downloads | Only the known sample ids are served; anything else is a 404 | `tests/test_upload_limits.py` |
 | Browser | Content-Security-Policy as a meta tag (GitHub Pages cannot send headers): same-origin by default, scripts only from this site and the NainDev ecosystem bar, no inline or eval scripts, no plugins; strict referrer policy | `Nain3D.Client/index.html`, `src/seo/csp.test.ts`, `e2e/quality.spec.ts` |
+| Offline shell | The service worker stores only the app's own built files and bundled samples (same origin, GET). API calls, other origins and the files a user opens are never cached; the opened file stays in memory | `Nain3D.Client/public/sw.js`, `e2e/pwa.spec.ts` |
 | Dependencies | `npm audit`, `pip-audit` and Trivy report nothing; Dependabot opens weekly update PRs for npm, pip and GitHub Actions | `.github/dependabot.yml` |
 | CI | Actions pinned to commit hashes, read-only token, no persisted credentials; actionlint and zizmor clean | `.github/workflows/ci.yml` |
 | Secrets | gitleaks over the full history reports nothing; no secrets are used by the project | CI and local checks |
