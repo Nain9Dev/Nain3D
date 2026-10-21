@@ -14,6 +14,8 @@ import { useClock } from './composables/useClock';
 import { useReducedMotion } from './composables/useReducedMotion';
 import AiProposalPanel from './components/AiProposalPanel.vue';
 import ContractPanel from './components/ContractPanel.vue';
+import ProfileDialog from './components/ProfileDialog.vue';
+import { useProfiles } from './composables/useProfiles';
 import LanguageSwitch from './components/LanguageSwitch.vue';
 import SamplePicker from './components/SamplePicker.vue';
 import StageView from './components/StageView.vue';
@@ -32,8 +34,11 @@ const clock = useClock(urlState.clock);
 const evaluation = ref<EvaluationResult | null>(null);
 const modelBuffer = shallowRef<ArrayBuffer | null>(null);
 const activeSampleId = ref<SampleId | null>(null);
-const profiles = ref<ProfileDefinition[]>([]);
-const selectedProfile = ref<string | null>(null);
+const profileStore = useProfiles();
+const profilesOpen = ref(false);
+/** The built-in profile the user chose (by name), or nothing when the AI proposes or a custom one is active. */
+const overrideName = () => profileStore.activeBuiltInName.value ?? undefined;
+const customProfile = () => profileStore.activeCustom.value ?? undefined;
 const isEvaluating = ref(false);
 const errorMessage = ref<string | null>(null);
 const autoRotate = ref(true);
@@ -90,7 +95,7 @@ async function loadSample(id: SampleId): Promise<void> {
   uploadedFile = null;
   activeSampleId.value = id;
   try {
-    const { result, blobUrl } = await api.evaluateSample(id, selectedProfile.value || undefined);
+    const { result, blobUrl } = await api.evaluateSample(id, overrideName(), customProfile());
     const buffer = await toBuffer(blobUrl);
     modelBuffer.value = buffer;
     evaluation.value = result;
@@ -115,7 +120,7 @@ async function handleUpload(file: File): Promise<void> {
   activeSampleId.value = null;
   try {
     modelBuffer.value = await file.arrayBuffer();
-    evaluation.value = await api.evaluateFile(file, selectedProfile.value || undefined);
+    evaluation.value = await api.evaluateFile(file, overrideName(), customProfile());
     revealOrigin.value = currentOrigin();
   } catch (err: unknown) {
     errorMessage.value = err instanceof ApiError ? err.detail || err.message : String(err);
@@ -124,14 +129,31 @@ async function handleUpload(file: File): Promise<void> {
   }
 }
 
-async function handleProfileChange(name: string): Promise<void> {
-  selectedProfile.value = name;
+/** Runs the current model again, after the user picked or edited a profile. */
+async function reevaluate(): Promise<void> {
   if (uploadedFile) {
-    evaluation.value = await api.evaluateFile(uploadedFile, name);
-    revealOrigin.value = currentOrigin();
+    await handleUpload(uploadedFile);
   } else if (activeSampleId.value) {
     await loadSample(activeSampleId.value);
   }
+}
+
+async function onSelectProfile(id: string): Promise<void> {
+  profileStore.select(id);
+  profilesOpen.value = false;
+  await reevaluate();
+}
+
+async function onSaveProfile(profile: ProfileDefinition): Promise<void> {
+  const wasActive = profileStore.activeId.value === profile.id;
+  profileStore.save(profile);
+  if (wasActive) await reevaluate();
+}
+
+async function onRemoveProfile(id: string): Promise<void> {
+  const wasActive = profileStore.activeId.value === id;
+  profileStore.remove(id);
+  if (wasActive) await reevaluate();
 }
 
 function toggleCompare(): void {
@@ -195,9 +217,6 @@ onMounted(async () => {
   };
   if (!isRecord) clock.start();
   const first: SampleId = urlState.sample ?? (urlState.sequence ? RECORD_SEQUENCE[0].sampleId : HERO_CONFORMANT);
-  void api.listProfiles().then((list) => {
-    profiles.value = list;
-  });
   await loadSample(first);
 });
 
@@ -271,13 +290,25 @@ onBeforeUnmount(() => {
           :evaluation="evaluation"
           :evaluating="isEvaluating"
           :reveal="reveal"
-          :profiles="profiles"
-          :selected-profile="selectedProfile"
           :show-profile-picker="!isRecord"
-          @change-profile="handleProfileChange"
+          @open-profiles="profilesOpen = true"
         />
       </section>
     </main>
+
+    <ProfileDialog
+      v-if="!isRecord"
+      :open="profilesOpen"
+      :built-in="profileStore.builtIn"
+      :custom="profileStore.custom.value"
+      :active-id="profileStore.activeId.value"
+      :can-add="profileStore.canAdd.value"
+      @close="profilesOpen = false"
+      @select="onSelectProfile"
+      @save="onSaveProfile"
+      @remove="onRemoveProfile"
+      @duplicate="profileStore.duplicate"
+    />
 
     <footer v-if="!isRecord" class="footbar">
       <span>{{ t('footer.stack') }}</span>
