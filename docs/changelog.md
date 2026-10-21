@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Store profiles (spec 006, PR 2)
+
+- Users create, edit, duplicate and delete their own check profiles (up to 20) and pick one, or "automatic", for every
+  review. Profiles live in `localStorage` on the device only; corrupt or invalid entries are skipped, never thrown.
+  Field-by-field validation with the same bounds as the API, decimal commas accepted, keyboard operable native dialog,
+  Spanish and English. Changing the active profile re-evaluates the model on screen.
+
 ## Unreleased — Store checks (spec 006, PR 1)
 
 - Optional store checks, added only when a profile defines the limit: file weight, texture resolution, material

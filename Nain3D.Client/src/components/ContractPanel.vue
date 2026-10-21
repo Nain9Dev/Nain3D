@@ -2,21 +2,27 @@
 import { computed } from 'vue';
 import { numberFormat, t, type MessageKey } from '../i18n';
 import type { RevealState } from '../timeline';
-import type { EvaluationResult, ProfileDefinition } from '../types/contracts';
+import type { EvaluationResult } from '../types/contracts';
 import { buildCheckRows, failedCheckNames } from '../viewModel';
 
 const props = defineProps<{
   evaluation: EvaluationResult | null;
   evaluating: boolean;
   reveal: RevealState;
-  profiles: ProfileDefinition[];
-  selectedProfile: string | null;
   showProfilePicker: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'changeProfile', name: string): void;
+  (e: 'openProfiles'): void;
 }>();
+
+/** Built-in profiles are translated; a user's profile shows its own name. */
+const appliedName = computed(() => {
+  const name = props.evaluation?.applied_profile.name ?? '';
+  const key = `category.${name}` as MessageKey;
+  const translated = t(key);
+  return translated === key ? name : translated;
+});
 
 const rows = computed(() => (props.evaluation ? buildCheckRows(props.evaluation, t, (n) => numberFormat.value.format(n)) : []));
 
@@ -63,12 +69,13 @@ function rowStatusText(index: number, passed: boolean, severity: string): string
         <h2 id="contract-title">{{ t('contract.title') }}</h2>
         <p class="sub">{{ t('contract.subtitle') }}</p>
       </div>
-      <label v-if="showProfilePicker && profiles.length > 0 && evaluation" class="profile">
+      <div v-if="showProfilePicker && evaluation" class="profile">
         <span class="label">{{ t('contract.profile') }}</span>
-        <select :value="selectedProfile || evaluation.applied_profile.name" @change="emit('changeProfile', ($event.target as HTMLSelectElement).value)">
-          <option v-for="p in profiles" :key="p.id" :value="p.name">{{ t(`category.${p.name}` as MessageKey) }}</option>
-        </select>
-      </label>
+        <button type="button" class="profile-btn" :aria-label="`${t('profiles.open')}: ${appliedName}`" @click="emit('openProfiles')">
+          <span class="profile-name">{{ appliedName }}</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+      </div>
     </header>
 
     <p v-if="!evaluation" class="empty">{{ evaluating ? t('contract.evaluating') : t('contract.waiting') }}</p>
@@ -145,14 +152,25 @@ h2 {
   flex-direction: column;
   gap: 2px;
 }
-.profile select {
-  min-height: 36px;
-  padding: 0 0.5rem;
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 44px;
+  max-width: 16rem;
+  padding: 0 0.7rem;
   border: 2px solid var(--nain-brand-black);
   border-radius: var(--nain-radius);
   background: var(--nain-surface);
-  font: 600 0.85rem var(--nain-font-sans);
+  font: 700 0.85rem var(--nain-font-sans);
   color: var(--nain-brand-black);
+  cursor: pointer;
+}
+.profile-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .empty {
   margin-top: var(--gap);

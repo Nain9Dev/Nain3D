@@ -110,7 +110,8 @@ export const api = {
 
   async evaluateSample(
     sampleId: string,
-    overrideProfile?: string
+    overrideProfile?: string,
+    customProfile?: ProfileDefinition
   ): Promise<{ result: EvaluationResult; blobUrl: string }> {
     let downloadRes: Response | null = null;
     try {
@@ -131,7 +132,7 @@ export const api = {
     const file = new File([blob], `${sampleId}.glb`, { type: 'model/gltf-binary' });
     const blobUrl = URL.createObjectURL(blob);
 
-    const result = await this.evaluateFile(file, overrideProfile);
+    const result = await this.evaluateFile(file, overrideProfile, customProfile);
     return { result, blobUrl };
   },
 
