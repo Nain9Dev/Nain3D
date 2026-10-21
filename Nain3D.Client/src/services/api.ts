@@ -67,13 +67,19 @@ export const api = {
     return `./samples/${sampleId}.glb`;
   },
 
-  async evaluateFile(file: File, overrideProfile?: string): Promise<EvaluationResult> {
+  async evaluateFile(
+    file: File,
+    overrideProfile?: string,
+    customProfile?: ProfileDefinition
+  ): Promise<EvaluationResult> {
     // The visitor's file is only sent to the API in local development; elsewhere it never leaves the browser.
     if (shouldUseBackend()) {
       try {
         const formData = new FormData();
         formData.append('file', file, file.name);
-        if (overrideProfile) {
+        if (customProfile) {
+          formData.append('custom_profile', JSON.stringify(customProfile));
+        } else if (overrideProfile) {
           formData.append('override_profile', overrideProfile);
         }
 
@@ -90,7 +96,7 @@ export const api = {
       }
     }
 
-    const result = await evaluateFileStandalone(file, overrideProfile);
+    const result = await evaluateFileStandalone(file, overrideProfile, customProfile);
     emitTelemetry('GateCheck', `EvaluateMeshConformance (${file.name})`, 28, 200, {
       asset: file.name,
       fileSizeBytes: file.size,

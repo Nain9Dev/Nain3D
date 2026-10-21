@@ -8,6 +8,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile, 
 from ..domain.models import EvaluationResult, ProfileDefinition
 from ..domain.profiles import DEFAULT_PROFILE, PROFILES
 from ..engine.evaluator import evaluate_conformance
+from ..engine.inventory import read_inventory
 from ..engine.mesh import extract_features, load_mesh_from_bytes
 from ..ml.classifier import predict_with_llm_if_available
 
@@ -143,6 +144,9 @@ async def download_sample(sample_id: str):
 async def evaluate_asset(
     file: UploadFile = File(..., description="Binary 3D model in .glb format"),
     override_profile: Optional[str] = Form(None, description="Optional profile category to enforce"),
+    custom_profile: Optional[str] = Form(
+        None, description="Optional profile as JSON (ProfileDefinition); takes precedence over override_profile"
+    ),
 ) -> EvaluationResult:
     """
     Evaluates an ingested 3D model (.glb).
@@ -186,18 +190,36 @@ async def evaluate_asset(
             detail=f"Unable to parse 3D asset as valid glTF/GLB binary: {e}",
         )
 
-    # Extract geometric features
-    features = extract_features(mesh)
+    # Extract geometric features, plus the texture/material inventory used by the optional store checks
+    inventory = read_inventory(file_bytes)
+    features = extract_features(mesh).model_copy(
+        update={
+            "texture_max_side_px": inventory.texture_max_side_px,
+            "material_count": inventory.material_count,
+            "textured_material_count": inventory.textured_material_count,
+            "has_uv_coordinates": inventory.has_uv_coordinates,
+            "inventory_readable": inventory.readable,
+        }
+    )
 
     # Infer AI proposal (Random Forest with fallback)
     ai_proposal = await predict_with_llm_if_available(mesh, features)
 
     # Resolve profile
-    profile_key = override_profile if override_profile and override_profile in PROFILES else ai_proposal.predicted_category
-    profile = PROFILES.get(profile_key, DEFAULT_PROFILE)
+    if custom_profile:
+        try:
+            profile = ProfileDefinition.model_validate_json(custom_profile)
+        except ValueError as e:  # Includes pydantic's ValidationError and malformed JSON.
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE,
+                detail=f"Invalid custom profile: {e}",
+            )
+    else:
+        profile_key = override_profile if override_profile and override_profile in PROFILES else ai_proposal.predicted_category
+        profile = PROFILES.get(profile_key, DEFAULT_PROFILE)
 
     # Deterministic contract evaluation
-    checks, verdict, summary = evaluate_conformance(features, profile)
+    checks, verdict, summary = evaluate_conformance(features, profile, asset_size_bytes=len(file_bytes))
 
     duration_ms = (time.perf_counter() - start_time) * 1000.0
 

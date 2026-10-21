@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Store checks (spec 006, PR 1)
+
+- Optional store checks, added only when a profile defines the limit: file weight, texture resolution, material
+  budget, UVs and textures present (ADR-008, `Proposed`). The four built-in profiles are unchanged and still run
+  four checks.
+- Inventory reader in both engines (GLB JSON and PNG, JPEG and WebP headers; no image library) with parity tests on
+  the bundled samples. The API accepts a custom profile as JSON (`custom_profile`); profile bounds are identical in
+  Python and TypeScript and an out-of-range profile is refused. New rows are localised in Spanish and English.
+
 ## Unreleased — Hardening and project status
 
 - API: uploads are limited to `.glb` (415), 50 MB (413) and checked for the binary glTF header (422) before

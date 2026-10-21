@@ -19,6 +19,10 @@ const LABEL_KEYS: Record<string, MessageKey> = {
   metric_scale: 'check.metric_scale',
   integrity_watertight: 'check.integrity_watertight',
   degenerate_faces: 'check.degenerate_faces',
+  file_size: 'check.file_size',
+  texture_resolution: 'check.texture_resolution',
+  material_budget: 'check.material_budget',
+  uv_and_textures: 'check.uv_and_textures',
 };
 
 /**
@@ -54,6 +58,20 @@ export function buildCheckRows(
       }
       case 'degenerate_faces':
         return row(formatNumber(features.degenerate_faces_count), formatNumber(profile.max_degenerate_faces));
+      case 'file_size':
+        return row(`${formatNumber(Number((evaluation.asset_size_bytes / 1048576).toFixed(2)))} MB`, `${formatNumber(profile.max_file_mb ?? 0)} MB`);
+      case 'texture_resolution': {
+        const side = features.texture_max_side_px;
+        const measurable = side !== null && side !== undefined;
+        const value = measurable ? `${formatNumber(side)} px` : t('check.unknown');
+        return row(value, `${formatNumber(profile.max_texture_px ?? 0)} px`, measurable ? undefined : value);
+      }
+      case 'material_budget':
+        return row(formatNumber(features.material_count ?? 0), formatNumber(profile.max_materials ?? 0));
+      case 'uv_and_textures': {
+        const value = check.passed ? t('check.present') : t('check.missing');
+        return row(value, value, value);
+      }
       default:
         return row(String(check.value), String(check.limit));
     }

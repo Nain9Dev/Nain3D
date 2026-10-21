@@ -58,6 +58,34 @@ describe('buildCheckRows', () => {
   });
 });
 
+describe('store checks', () => {
+  const store = {
+    ...ev,
+    applied_profile: { ...ev.applied_profile, max_file_mb: 5, max_texture_px: 2048, max_materials: 4, require_uv_and_textures: true },
+    features: { ...ev.features, texture_max_side_px: 4096, material_count: 6, has_uv_coordinates: true, textured_material_count: 1 },
+    checks: [
+      ...ev.checks,
+      { name: 'file_size', label: 'x', value: '7.40 MB', limit: '<= 5 MB', passed: false, severity: 'blocking', message: '' },
+      { name: 'texture_resolution', label: 'x', value: '4096 px', limit: '<= 2048 px', passed: false, severity: 'blocking', message: '' },
+      { name: 'material_budget', label: 'x', value: 6, limit: 4, passed: false, severity: 'blocking', message: '' },
+      { name: 'uv_and_textures', label: 'x', value: 'present', limit: 'Required', passed: true, severity: 'blocking', message: '' },
+    ],
+  } as unknown as EvaluationResult;
+
+  it('localises the new labels and figures from the payload', () => {
+    const rows = buildCheckRows({ ...store, asset_size_bytes: 7.4 * 1048576 }, es, fmt);
+    const byName = Object.fromEntries(rows.map((r) => [r.name, r]));
+    expect(byName.file_size).toMatchObject({ label: 'Peso del archivo', figures: '7,4 MB de 5 MB', passed: false });
+    expect(byName.texture_resolution).toMatchObject({ label: 'Resolución de texturas', figures: '4096 px de 2048 px' }); // es-ES does not group four-digit numbers.
+    expect(byName.material_budget).toMatchObject({ label: 'Materiales', figures: '6 de 4' });
+    expect(byName.uv_and_textures).toMatchObject({ label: 'UV y texturas', figures: 'Presentes', passed: true });
+  });
+
+  it('names the failing store checks in the verdict reason', () => {
+    expect(failedCheckNames(store, es)).toEqual(['Extensión física', 'Peso del archivo', 'Resolución de texturas', 'Materiales']);
+  });
+});
+
 describe('failedCheckNames', () => {
   it('lists only failing blocking checks, localised', () => {
     expect(failedCheckNames(ev, es)).toEqual(['Extensión física']);
