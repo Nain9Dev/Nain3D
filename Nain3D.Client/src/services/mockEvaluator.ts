@@ -9,6 +9,8 @@ import type {
   AiProposal,
 } from '../types/contracts';
 import { analyzeGlbMesh, type MeshAnalysis } from './glbMesh';
+import { readInventory } from './glbInventory';
+import { validateProfile } from '../profiles/validateProfile';
 
 export const PROFILES: Record<string, ProfileDefinition> = {
   Monitor: {
@@ -289,36 +291,121 @@ function evaluateConformance(
       : `Detected ${features.degenerate_faces_count} degenerate faces with area <= 1e-12 m²`,
   });
 
-  // Fail-closed aggregation
+  return { checks, ...aggregateVerdict(checks) };
+}
+
+/** Fail-closed aggregation: one failing blocking check rejects the asset. */
+function aggregateVerdict(checks: CheckResult[]): { verdict: ConformanceVerdict; summary: string } {
   const hasBlockingFailure = checks.some((c) => !c.passed && c.severity === 'blocking');
   const hasAdvisoryFailure = checks.some((c) => !c.passed && c.severity === 'advisory');
 
-  let verdict: ConformanceVerdict;
-  let summary: string;
-
   if (hasBlockingFailure) {
-    verdict = 'NON_CONFORMANT';
-    summary = 'Asset REJECTED: One or more blocking technical contract rules failed.';
-  } else if (hasAdvisoryFailure) {
-    verdict = 'CONFORMANT_WITH_FINDINGS';
-    summary = 'Asset CONFORMANT WITH FINDINGS: All blocking criteria met; advisory warnings flagged.';
-  } else {
-    verdict = 'CONFORMANT';
-    summary = 'Asset CONFORMANT: All technical contract criteria fully satisfied.';
+    return { verdict: 'NON_CONFORMANT', summary: 'Asset REJECTED: One or more blocking technical contract rules failed.' };
+  }
+  if (hasAdvisoryFailure) {
+    return {
+      verdict: 'CONFORMANT_WITH_FINDINGS',
+      summary: 'Asset CONFORMANT WITH FINDINGS: All blocking criteria met; advisory warnings flagged.',
+    };
+  }
+  return { verdict: 'CONFORMANT', summary: 'Asset CONFORMANT: All technical contract criteria fully satisfied.' };
+}
+
+const MIB = 1024 * 1024;
+
+/** Optional checks, added only when the profile defines the limit (same rules as the Python engine). All blocking. */
+function storeChecks(features: GeometricFeatures, profile: ProfileDefinition, sizeBytes: number): CheckResult[] {
+  const out: CheckResult[] = [];
+  const mb = (bytes: number) => (bytes / MIB).toFixed(2);
+
+  if (profile.max_file_mb != null) {
+    const passed = sizeBytes <= profile.max_file_mb * MIB;
+    out.push({
+      name: 'file_size',
+      label: 'File Weight (MB)',
+      value: `${mb(sizeBytes)} MB`,
+      limit: `<= ${profile.max_file_mb} MB`,
+      passed,
+      severity: 'blocking',
+      message: passed
+        ? `File weight within limit (${mb(sizeBytes)} MB)`
+        : `File too heavy: ${mb(sizeBytes)} MB > ${profile.max_file_mb} MB`,
+    });
   }
 
-  return { checks, verdict, summary };
+  if (profile.max_texture_px != null) {
+    const side = features.texture_max_side_px;
+    const measurable = features.inventory_readable !== false && side !== null && side !== undefined;
+    const passed = measurable && (side as number) <= profile.max_texture_px; // Fail-closed when unmeasurable.
+    out.push({
+      name: 'texture_resolution',
+      label: 'Texture Resolution (px)',
+      value: measurable ? `${side} px` : 'unknown',
+      limit: `<= ${profile.max_texture_px} px`,
+      passed,
+      severity: 'blocking',
+      message: passed
+        ? `Largest texture ${side} px`
+        : !measurable
+        ? 'A texture could not be measured (external or unsupported image)'
+        : `Texture too large: ${side} px > ${profile.max_texture_px} px`,
+    });
+  }
+
+  if (profile.max_materials != null) {
+    const count = features.material_count ?? 0;
+    const passed = count <= profile.max_materials;
+    out.push({
+      name: 'material_budget',
+      label: 'Material Budget',
+      value: count,
+      limit: profile.max_materials,
+      passed,
+      severity: 'blocking',
+      message: passed ? `${count} materials in use` : `Too many materials: ${count} > ${profile.max_materials}`,
+    });
+  }
+
+  if (profile.require_uv_and_textures) {
+    const passed =
+      features.inventory_readable !== false && !!features.has_uv_coordinates && (features.textured_material_count ?? 0) >= 1;
+    out.push({
+      name: 'uv_and_textures',
+      label: 'UV Coordinates and Textures',
+      value: passed ? 'present' : 'missing',
+      limit: 'Required',
+      passed,
+      severity: 'blocking',
+      message: passed
+        ? 'UV coordinates and textured materials present'
+        : 'Meshes without UV coordinates or no textured material: the model will look flat',
+    });
+  }
+  return out;
 }
 
 export async function evaluateFileStandalone(
   file: File,
-  overrideProfile?: string
+  overrideProfile?: string,
+  customProfile?: ProfileDefinition
 ): Promise<EvaluationResult> {
+  if (customProfile) {
+    const invalid = validateProfile(customProfile);
+    if (invalid.length > 0) throw new Error(`Invalid profile: ${invalid.join(', ')}`);
+  }
   const startTime = performance.now();
   const buffer = await file.arrayBuffer();
   const sha256 = await calculateSha256(buffer);
   const mesh = analyzeGlbMesh(buffer);
-  const features = parseGlbFeatures(buffer, mesh);
+  const inventory = readInventory(buffer);
+  const features: GeometricFeatures = {
+    ...parseGlbFeatures(buffer, mesh),
+    texture_max_side_px: inventory.textureMaxSidePx,
+    material_count: inventory.materialCount,
+    textured_material_count: inventory.texturedMaterialCount,
+    has_uv_coordinates: inventory.hasUvCoordinates,
+    inventory_readable: inventory.readable,
+  };
   const aiProposal = inferAiProposal(features, file.name);
 
   const profileKey =
@@ -328,8 +415,12 @@ export async function evaluateFileStandalone(
       ? aiProposal.predicted_category
       : 'Mobiliario (Chair)';
 
-  const profile = PROFILES[profileKey] || PROFILES['Mobiliario (Chair)'];
+  const profile = customProfile ?? PROFILES[profileKey] ?? PROFILES['Mobiliario (Chair)'];
   const evaluated = evaluateConformance(features, profile);
+  evaluated.checks.push(...storeChecks(features, profile, file.size));
+  const aggregate = aggregateVerdict(evaluated.checks);
+  evaluated.verdict = aggregate.verdict;
+  evaluated.summary = aggregate.summary;
   const { checks } = evaluated;
   // Fail-closed: an asset whose geometry could not be read is never approved.
   const verdict: ConformanceVerdict = mesh.readable ? evaluated.verdict : 'INCOMPLETE';

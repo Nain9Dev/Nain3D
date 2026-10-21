@@ -25,6 +25,14 @@ class GeometricFeatures(BaseModel):
     max_dimension_m: float = Field(ge=0, description="Maximum single dimension in meters")
     volume_m3: float = Field(ge=0, description="Approximated enclosed volume in cubic meters")
     degenerate_faces_count: int = Field(ge=0, default=0, description="Faces with near-zero area")
+    # Inventory used by the optional store checks (additive: defaults keep the original payload valid).
+    texture_max_side_px: Optional[int] = Field(
+        default=0, ge=0, description="Largest texture side in pixels; 0 = no textures, null = could not be measured"
+    )
+    material_count: int = Field(default=0, ge=0, description="Distinct materials used by the meshes")
+    textured_material_count: int = Field(default=0, ge=0, description="Used materials that have at least one texture")
+    has_uv_coordinates: bool = Field(default=False, description="Every mesh primitive carries UV coordinates")
+    inventory_readable: bool = Field(default=True, description="False when the file structure could not be read")
 
 
 class CheckResult(BaseModel):
@@ -51,13 +59,18 @@ class AiProposal(BaseModel):
 class ProfileDefinition(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: str
-    name: str
-    description: str
-    max_triangles: int
-    max_dimension_m: float
+    id: str = Field(min_length=1, max_length=64)
+    name: str = Field(min_length=1, max_length=80)
+    description: str = Field(max_length=300)
+    max_triangles: int = Field(gt=0, le=100_000_000)
+    max_dimension_m: float = Field(gt=0, le=100_000)
     is_watertight_required: bool
-    max_degenerate_faces: int = 0
+    max_degenerate_faces: int = Field(default=0, ge=0)
+    # Optional store limits: a profile that leaves them out runs only the four original checks.
+    max_file_mb: Optional[float] = Field(default=None, gt=0, le=1024)
+    max_texture_px: Optional[int] = Field(default=None, ge=16, le=65_536)
+    max_materials: Optional[int] = Field(default=None, ge=0, le=10_000)
+    require_uv_and_textures: bool = False
 
 
 class EvaluationResult(BaseModel):
