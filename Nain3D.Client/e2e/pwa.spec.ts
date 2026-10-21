@@ -7,6 +7,12 @@ async function ready(page: Page): Promise<void> {
   await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
 }
 
+/** Waits until the worker has precached the shell and taken control of the page (slow on CI runners). */
+async function workerControls(page: Page): Promise<void> {
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)), { timeout: 30_000 }).toBe(true);
+}
+
 test('the manifest describes an installable standalone app with real icons', async ({ page, request }) => {
   await page.goto('/?clock=manual&sample=sample-shoe');
   const href = await page.locator('link[rel="manifest"]').getAttribute('href');
@@ -28,9 +34,7 @@ test('the manifest describes an installable standalone app with real icons', asy
 test('after a first visit the app opens offline and reviews a sample', async ({ page, context }) => {
   await page.goto('/?clock=manual&sample=sample-shoe');
   await ready(page);
-  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
-  // The worker takes control after activation; wait until it does.
-  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+  await workerControls(page);
 
   await context.setOffline(true);
   await page.goto('/?clock=manual&sample=sample-shoe');
@@ -43,7 +47,7 @@ test('after a first visit the app opens offline and reviews a sample', async ({ 
 test('the worker never caches API calls, other origins or non-GET requests', async ({ page }) => {
   await page.goto('/?clock=manual&sample=sample-shoe');
   await ready(page);
-  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+  await workerControls(page);
   const cached = await page.evaluate(async () => {
     const urls: string[] = [];
     for (const name of await caches.keys()) {
