@@ -9,7 +9,8 @@
 **A deterministic conformance contract for 3D assets, with an AI classifier that proposes and never decides.**
 An architecture case study by [NainDev](https://www.naindev.com): FastAPI backend, Vue 3 client, architecture
 decision records, tests and accessibility checks, all in the open.
-
+[![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](README.md)
+[![Español](https://img.shields.io/badge/Idioma-Espa%C3%B1ol-emerald?style=flat-square)](README.es.md)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-3d.naindev.com-0284c7?style=flat-square&logo=google-chrome&logoColor=white)](https://3d.naindev.com/)
 [![CI](https://github.com/Nain9Dev/Nain3D/actions/workflows/ci.yml/badge.svg)](https://github.com/Nain9Dev/Nain3D/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)

@@ -19,7 +19,7 @@ export function resolveLang(search: string, storage: StorageReader): Lang {
   const fromUrl = new URLSearchParams(search).get('lang');
   if (isLang(fromUrl)) return fromUrl;
   try {
-    const stored = storage?.getItem(LANG_STORAGE_KEY);
+    const stored = storage?.getItem(LANG_STORAGE_KEY) ?? storage?.getItem('nain_locale');
     if (isLang(stored)) return stored;
   } catch {
     // Storage can be blocked (private mode, sandboxed frames); Spanish is the safe default.
@@ -51,7 +51,9 @@ export function initLang(): void {
 
 function rememberLang(value: Lang): void {
   try {
-    safeStorage()?.setItem(LANG_STORAGE_KEY, value);
+    const s = safeStorage();
+    s?.setItem(LANG_STORAGE_KEY, value);
+    s?.setItem('nain_locale', value);
   } catch {
     // Not remembering is acceptable; the URL parameter still works.
   }
@@ -64,6 +66,19 @@ export function setLang(value: Lang): void {
   const url = new URL(window.location.href);
   url.searchParams.set('lang', value);
   window.history.replaceState(null, '', url);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('nain:locale-change', { detail: { locale: value } }));
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('nain:locale-change', (event: Event) => {
+    const custom = event as CustomEvent<{ locale?: Lang }>;
+    const target = custom.detail?.locale;
+    if (isLang(target) && lang.value !== target) {
+      setLang(target);
+    }
+  });
 }
 
 /** Reactive translate function for templates and scripts. */
