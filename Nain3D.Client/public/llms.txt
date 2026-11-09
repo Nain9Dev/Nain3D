@@ -1,0 +1,7 @@
+# Nain3D Gateway
+
+> Deterministic 3D asset conformance engine and AI classification gateway: the AI proposes a category for a 3D model and a deterministic contract decides whether it passes (triangle budget, physical extent, watertightness, degenerate faces).
+
+- [Live demo](https://3d.naindev.com/): inspect sample models and your own file in the browser, in Spanish and English
+- [Source code](https://github.com/Nain9Dev/Nain3D): FastAPI backend, Vue 3 client, architecture decision records and tests
+- [NainDev](https://www.naindev.com/): the author's main site and project ecosystem
