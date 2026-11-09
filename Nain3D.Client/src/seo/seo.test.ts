@@ -119,6 +119,34 @@ describe('crawler files', () => {
   });
 });
 
+describe('shared NainDev discoverability baseline', () => {
+  it('names the author with the shared Person id and links the author', () => {
+    expect(jsonLd.author['@id']).toBe('https://www.naindev.com/#person');
+    expect(html).toContain('<link rel="author" href="https://www.naindev.com/" />');
+  });
+
+  it('gives the Twitter card the same title, description and image as Open Graph', () => {
+    expect(meta('name', 'twitter:title')).toBe(meta('property', 'og:title'));
+    expect(meta('name', 'twitter:description')).toBe(meta('property', 'og:description'));
+    expect(meta('name', 'twitter:image')).toBe(meta('property', 'og:image'));
+  });
+
+  it('declares exactly one canonical link and an og:url equal to it', () => {
+    expect(html.match(/<link rel="canonical"/g)).toHaveLength(1);
+    expect(meta('property', 'og:url')).toBe('https://3d.naindev.com/');
+  });
+
+  it('serves llms.txt as Markdown that starts with an H1, with a summary and the key links', () => {
+    const text = readFileSync(client('public/llms.txt'), 'utf8');
+    const lines = text.split(/\r?\n/);
+    expect(lines[0]).toBe('# Nain3D Gateway');
+    expect(lines.some((line) => line.startsWith('> '))).toBe(true);
+    expect(text).toContain('https://github.com/Nain9Dev/Nain3D');
+    expect(text).toContain('https://www.naindev.com/');
+    expect(text).not.toMatch(RESERVED);
+  });
+});
+
 describe('case study', () => {
   const caseStudy = readFileSync(repo('docs/case-study.md'), 'utf8');
 
